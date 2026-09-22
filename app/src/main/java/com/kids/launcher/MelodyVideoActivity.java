@@ -105,6 +105,19 @@ public class MelodyVideoActivity extends AppCompatActivity {
             }
             return String.format(Locale.getDefault(), "%.2f GB", sizeBytes / (1024.0 * 1024.0 * 1024.0));
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            VideoItem videoItem = (VideoItem) o;
+            return path != null ? path.equalsIgnoreCase(videoItem.path) : videoItem.path == null;
+        }
+
+        @Override
+        public int hashCode() {
+            return path != null ? path.toLowerCase(Locale.US).hashCode() : 0;
+        }
     }
 
     private View layoutGalleryView;
@@ -172,6 +185,7 @@ public class MelodyVideoActivity extends AppCompatActivity {
     private final float[] PLAYBACK_SPEEDS = {1.0f, 1.25f, 1.5f, 2.0f, 0.5f, 0.75f};
     private final String[] PLAYBACK_SPEED_LABELS = {"⚡ 1.0x", "⚡ 1.25x", "⚡ 1.5x", "⚡ 2.0x", "⚡ 0.5x", "⚡ 0.75x"};
 
+    private VideoItem currentVideoItem = null;
     private int currentPlayingIndex = -1;
     private int batteryPercent = 100;
     private BroadcastReceiver batteryReceiver;
@@ -204,20 +218,71 @@ public class MelodyVideoActivity extends AppCompatActivity {
         }
     };
 
+    private int getCurrentTotalDuration() {
+        int dur = 0;
+        if (vvPlayer != null) {
+            try {
+                dur = vvPlayer.getDuration();
+            } catch (Exception ignored) {}
+        }
+        if (dur <= 0 && currentVideoItem != null && currentVideoItem.durationMs > 0) {
+            dur = (int) currentVideoItem.durationMs;
+        }
+        return Math.max(0, dur);
+    }
+
+    private void updateProgressUI(int currentMs) {
+        int total = getCurrentTotalDuration();
+        if (total > 0) {
+            int prog = (int) (((long) currentMs * 1000) / total);
+            sbPlayerProgress.setProgress(Math.max(0, Math.min(1000, prog)));
+            tvPlayerTotalTime.setText(formatTime(total));
+        }
+        tvPlayerCurrentTime.setText(formatTime(Math.max(0, currentMs)));
+    }
+
+    private void showDoubleTapHud(boolean isForward) {
+        TextView hud = isForward ? tvHudDoubleTapRight : tvHudDoubleTapLeft;
+        if (hud != null) {
+            hud.setVisibility(View.VISIBLE);
+            hud.setAlpha(1.0f);
+            hud.animate().alpha(0f).setDuration(600).withEndAction(() -> {
+                hud.setVisibility(View.GONE);
+            }).start();
+        }
+    }
+
+    private int findVideoIndex(String path, List<VideoItem> list) {
+        if (path == null || list == null) return -1;
+        for (int i = 0; i < list.size(); i++) {
+            if (path.equalsIgnoreCase(list.get(i).path)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private final Runnable progressUpdateRunnable = new Runnable() {
         @Override
         public void run() {
-            if (vvPlayer != null && vvPlayer.isPlaying() && !isPlayerSeeking) {
-                int cur = vvPlayer.getCurrentPosition();
-                int total = vvPlayer.getDuration();
-                if (total > 0) {
-                    int prog = (int) (((long) cur * 1000) / total);
-                    sbPlayerProgress.setProgress(prog);
-                }
-                tvPlayerCurrentTime.setText(formatTime(cur));
-                tvPlayerTotalTime.setText(formatTime(total));
+            if (vvPlayer != null && !isPlayerSeeking) {
+                try {
+                    int cur = vvPlayer.getCurrentPosition();
+                    int total = getCurrentTotalDuration();
+                    if (total > 0) {
+                        int prog = (int) (((long) cur * 1000) / total);
+                        sbPlayerProgress.setProgress(Math.max(0, Math.min(1000, prog)));
+                        tvPlayerTotalTime.setText(formatTime(total));
+                    }
+                    tvPlayerCurrentTime.setText(formatTime(Math.max(0, cur)));
+                    if (vvPlayer.isPlaying()) {
+                        btnVideoPlayPause.setText("⏸");
+                    } else {
+                        btnVideoPlayPause.setText("▶");
+                    }
+                } catch (Exception ignored) {}
             }
-            playerHandler.postDelayed(this, 400);
+            playerHandler.postDelayed(this, 300);
         }
     };
 
@@ -354,13 +419,17 @@ public class MelodyVideoActivity extends AppCompatActivity {
         btnPlayerLoop.setOnClickListener(v -> toggleLoop());
         btnPlayerRotate.setOnClickListener(v -> toggleOrientation());
 
+        layoutPlayerControls.setOnClickListener(v -> toggleControls());
+
         sbPlayerProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser && vvPlayer != null) {
-                    int total = vvPlayer.getDuration();
-                    int targetMs = (int) (((long) progress * total) / 1000);
-                    tvPlayerCurrentTime.setText(formatTime(targetMs));
+                    int total = getCurrentTotalDuration();
+                    if (total > 0) {
+                        int targetMs = (int) (((long) progress * total) / 1000);
+                        tvPlayerCurrentTime.setText(formatTime(targetMs));
+                    }
                 }
             }
 
@@ -374,9 +443,12 @@ public class MelodyVideoActivity extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 isPlayerSeeking = false;
                 if (vvPlayer != null) {
-                    int total = vvPlayer.getDuration();
-                    int targetMs = (int) (((long) seekBar.getProgress() * total) / 1000);
-                    vvPlayer.seekTo(targetMs);
+                    int total = getCurrentTotalDuration();
+                    if (total > 0) {
+                        int targetMs = (int) (((long) seekBar.getProgress() * total) / 1000);
+                        vvPlayer.seekTo(targetMs);
+                        updateProgressUI(targetMs);
+                    }
                 }
                 scheduleHideControls();
             }
@@ -418,6 +490,10 @@ public class MelodyVideoActivity extends AppCompatActivity {
                     playerHandler.postDelayed(hideUnlockButtonRunnable, 3000);
                 }
                 return true;
+            }
+
+            if (layoutPlayerControls != null && layoutPlayerControls.getVisibility() == View.VISIBLE) {
+                return false;
             }
 
             gestureDetector.onTouchEvent(event);
@@ -603,25 +679,21 @@ public class MelodyVideoActivity extends AppCompatActivity {
     private void rewind10s() {
         if (vvPlayer == null) return;
         int cur = vvPlayer.getCurrentPosition();
-        vvPlayer.seekTo(Math.max(0, cur - 10000));
-        tvHudDoubleTapLeft.setVisibility(View.VISIBLE);
-        tvHudDoubleTapLeft.setAlpha(1.0f);
-        tvHudDoubleTapLeft.animate().alpha(0f).setDuration(600).withEndAction(() -> {
-            tvHudDoubleTapLeft.setVisibility(View.GONE);
-        }).start();
+        int target = Math.max(0, cur - 10000);
+        vvPlayer.seekTo(target);
+        updateProgressUI(target);
+        showDoubleTapHud(false);
         scheduleHideControls();
     }
 
     private void forward10s() {
         if (vvPlayer == null) return;
         int cur = vvPlayer.getCurrentPosition();
-        int total = vvPlayer.getDuration();
-        vvPlayer.seekTo(Math.min(total, cur + 10000));
-        tvHudDoubleTapRight.setVisibility(View.VISIBLE);
-        tvHudDoubleTapRight.setAlpha(1.0f);
-        tvHudDoubleTapRight.animate().alpha(0f).setDuration(600).withEndAction(() -> {
-            tvHudDoubleTapRight.setVisibility(View.GONE);
-        }).start();
+        int total = getCurrentTotalDuration();
+        int target = (total > 0) ? Math.min(total, cur + 10000) : (cur + 10000);
+        vvPlayer.seekTo(target);
+        updateProgressUI(target);
+        showDoubleTapHud(true);
         scheduleHideControls();
     }
 
@@ -736,25 +808,47 @@ public class MelodyVideoActivity extends AppCompatActivity {
     }
 
     private void playNextVideo() {
-        if (displayedVideos.isEmpty()) return;
-        if (currentPlayingIndex >= 0 && currentPlayingIndex + 1 < displayedVideos.size()) {
-            playVideo(displayedVideos.get(currentPlayingIndex + 1));
-        } else {
-            Toast.makeText(this, "End of playlist 🌸", Toast.LENGTH_SHORT).show();
+        List<VideoItem> list = !displayedVideos.isEmpty() ? displayedVideos : allVideos;
+        if (list.isEmpty()) {
+            Toast.makeText(this, "No videos available 🌸", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        int nextIndex = 0;
+        if (currentPlayingIndex >= 0) {
+            nextIndex = (currentPlayingIndex + 1) % list.size();
+        } else if (currentVideoItem != null) {
+            int found = findVideoIndex(currentVideoItem.path, list);
+            if (found >= 0) {
+                nextIndex = (found + 1) % list.size();
+            }
+        }
+        playVideo(list.get(nextIndex));
     }
 
     private void playPrevVideo() {
-        if (displayedVideos.isEmpty()) return;
-        if (vvPlayer != null && vvPlayer.getCurrentPosition() > 3000) {
-            vvPlayer.seekTo(0);
+        List<VideoItem> list = !displayedVideos.isEmpty() ? displayedVideos : allVideos;
+        if (list.isEmpty()) {
+            Toast.makeText(this, "No videos available 🌸", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (currentPlayingIndex - 1 >= 0) {
-            playVideo(displayedVideos.get(currentPlayingIndex - 1));
-        } else {
-            Toast.makeText(this, "First video in playlist 🌸", Toast.LENGTH_SHORT).show();
+
+        if (vvPlayer != null && vvPlayer.getCurrentPosition() > 3000) {
+            vvPlayer.seekTo(0);
+            updateProgressUI(0);
+            return;
         }
+
+        int prevIndex = list.size() - 1;
+        if (currentPlayingIndex >= 0) {
+            prevIndex = (currentPlayingIndex - 1 + list.size()) % list.size();
+        } else if (currentVideoItem != null) {
+            int found = findVideoIndex(currentVideoItem.path, list);
+            if (found >= 0) {
+                prevIndex = (found - 1 + list.size()) % list.size();
+            }
+        }
+        playVideo(list.get(prevIndex));
     }
 
     private void setupSearch() {
@@ -910,7 +1004,9 @@ public class MelodyVideoActivity extends AppCompatActivity {
     private void playVideo(VideoItem item) {
         MelodyMusicManager.getInstance().pause();
 
-        currentPlayingIndex = displayedVideos.indexOf(item);
+        currentVideoItem = item;
+        List<VideoItem> currentList = !displayedVideos.isEmpty() ? displayedVideos : allVideos;
+        currentPlayingIndex = findVideoIndex(item.path, currentList);
 
         layoutGalleryView.setVisibility(View.GONE);
         layoutPlayerContainer.setVisibility(View.VISIBLE);
@@ -921,6 +1017,12 @@ public class MelodyVideoActivity extends AppCompatActivity {
 
         tvPlayerVideoTitle.setText(item.title);
         btnVideoPlayPause.setText("⏸");
+        sbPlayerProgress.setProgress(0);
+        tvPlayerCurrentTime.setText("00:00");
+        int initialTotal = item.durationMs > 0 ? (int) item.durationMs : 0;
+        tvPlayerTotalTime.setText(formatTime(initialTotal));
+
+        playerHandler.removeCallbacks(progressUpdateRunnable);
 
         vvPlayer.setVideoPath(item.path);
         vvPlayer.setOnPreparedListener(mp -> {
@@ -937,22 +1039,18 @@ public class MelodyVideoActivity extends AppCompatActivity {
             }
 
             vvPlayer.start();
-            int total = vvPlayer.getDuration();
+            int total = getCurrentTotalDuration();
             tvPlayerTotalTime.setText(formatTime(total));
             scheduleHideControls();
+            playerHandler.removeCallbacks(progressUpdateRunnable);
             playerHandler.post(progressUpdateRunnable);
         });
 
         vvPlayer.setOnCompletionListener(mp -> {
             if (isLooping) {
                 vvPlayer.start();
-            } else if (currentPlayingIndex >= 0 && currentPlayingIndex + 1 < displayedVideos.size()) {
-                playNextVideo();
             } else {
-                btnVideoPlayPause.setText("▶");
-                layoutPlayerControls.setVisibility(View.VISIBLE);
-                layoutPlayerControls.setAlpha(1.0f);
-                playerHandler.removeCallbacks(hideControlsRunnable);
+                playNextVideo();
             }
         });
     }
