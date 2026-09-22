@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_melody_sky">
+
+    <!-- Top Header Bar with Prominent Send / Receive Mode Selector -->
+    <LinearLayout
+        android:id="@+id/layout_share_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="8dp"
+        android:background="#66FFFFFF"
+        android:layout_alignParentTop="true">
+
+        <TextView
+            android:id="@+id/btn_share_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="◀ Back"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_melody_chip_selected"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="6dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- Segmented Mode Tabs: Send vs Receive -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tab_mode_send"
+                android:layout_width="140dp"
+                android:layout_height="36dp"
+                android:gravity="center"
+                android:text="📤 Send Files"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_chip_selected"
+                android:layout_marginEnd="6dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:id="@+id/tab_mode_receive"
+                android:layout_width="140dp"
+                android:layout_height="36dp"
+                android:gravity="center"
+                android:text="📥 Receive Files"
+                android:textColor="#831843"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_chip_unselected"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btn_visibility_toggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👁️ Visible: ON"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_chip_selected"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="6dp"
+                android:layout_marginEnd="6dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:id="@+id/btn_bt_toggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📶 BT: ON"
+                android:textColor="#831843"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_pill"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 1. SEND MODE VIEW (Select Files -> Pick Target Device -> Beam) -->
+    <LinearLayout
+        android:id="@+id/layout_mode_send_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_below="@id/layout_share_header"
+        android:padding="12dp"
+        android:visibility="visible">
+
+        <!-- Left Column: Choose Files to Share -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.0"
+            android:orientation="vertical"
+            android:background="@drawable/bg_melody_card"
+            android:padding="14dp"
+            android:layout_marginEnd="10dp">
+
+            <!-- Category Filter Chips -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:id="@+id/chip_share_photos"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="📸 Photos"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_chip_selected"
+                    android:paddingVertical="6dp"
+                    android:layout_marginEnd="4dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/chip_share_videos"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="🎬 Videos"
+                    android:textColor="#831843"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_chip_unselected"
+                    android:paddingVertical="6dp"
+                    android:layout_marginEnd="4dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/chip_share_music"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="🎵 Music"
+                    android:textColor="#831843"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_chip_unselected"
+                    android:paddingVertical="6dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <!-- Selection Count & Select All Action -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp">
+
+                <TextView
+                    android:id="@+id/tv_selected_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:text="Select files to send (0 selected)"
+                    android:textColor="#831843"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btn_share_select_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="Select All"
+                    android:textColor="#DB2777"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </RelativeLayout>
+
+            <!-- Grid of Selectable Files -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_share_files"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:scrollbars="vertical" />
+        </LinearLayout>
+
+        <!-- Right Column: Nearby Devices Radar -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.0"
+            android:orientation="vertical"
+            android:background="@drawable/bg_melody_card"
+            android:padding="14dp">
+
+            <!-- Nearby Radar Header -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:text="📡 Step 2: Choose Receiver"
+                    android:textColor="#831843"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btn_scan_radar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="🔄 Scan Nearby"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_chip_selected"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </RelativeLayout>
+
+            <!-- Empty Devices / Scanning Prompt -->
+            <LinearLayout
+                android:id="@+id/layout_empty_devices"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="16dp"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📡✨"
+                    android:textSize="28sp"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Scanning for nearby devices..."
+                    android:textColor="#831843"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Make sure the other phone or laptop has Bluetooth ON! 🌸"
+                    android:textColor="#9D174D"
+                    android:textSize="10sp"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <!-- Discovered Devices RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_nearby_devices"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 2. RECEIVE MODE VIEW (Discoverable Beacon + Local Wi-Fi Drop + QR Code + Received Inbox) -->
+    <LinearLayout
+        android:id="@+id/layout_mode_receive_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_below="@id/layout_share_header"
+        android:padding="12dp"
+        android:visibility="gone">
+
+        <!-- Left: Receiver Bluetooth Beacon & Pairing Guide -->
+        <ScrollView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.0"
+            android:background="@drawable/bg_melody_card"
+            android:padding="14dp"
+            android:layout_marginEnd="10dp"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <!-- Radar Beacon Circle -->
+                <FrameLayout
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
+                    android:layout_marginBottom="8dp">
+
+                    <View
+                        android:layout_width="90dp"
+                        android:layout_height="90dp"
+                        android:background="@drawable/bg_avatar_circle" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="🐰📡"
+                        android:textSize="36sp" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tv_my_device_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🌸 Bluetooth: Kids_tablet"
+                    android:textColor="#831843"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="2dp" />
+
+                <TextView
+                    android:id="@+id/tv_receive_status_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🟢 Ready to Receive Incoming Files"
+                    android:textColor="#059669"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_pill"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:layout_marginBottom="10dp" />
+
+                <!-- Action 1: Make Discoverable -->
+                <TextView
+                    android:id="@+id/btn_make_discoverable"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="💡 Make Discoverable (5 Mins)"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_chip_selected"
+                    android:paddingVertical="9dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginBottom="6dp" />
+
+                <!-- Action 2: Open System Bluetooth Settings -->
+                <TextView
+                    android:id="@+id/btn_open_bt_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="⚙️ Open Android Bluetooth Settings"
+                    android:textColor="#831843"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_chip_unselected"
+                    android:paddingVertical="9dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginBottom="10dp" />
+
+                <!-- Phone to Tablet Instructions Card -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_melody_pill"
+                    android:padding="10dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📱 How to Send from your Phone:"
+                        android:textColor="#831843"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/tv_bt_guide_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1️⃣ Tap 'Make Discoverable' or 'Open Settings' above.\n2️⃣ On your Phone, select files > Share > Bluetooth > choose 'Kids_tablet'.\n3️⃣ On this tablet, pull down the top notification bar and tap 'Accept'!"
+                        android:textColor="#9D174D"
+                        android:textSize="10sp"
+                        android:lineSpacingExtra="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Right: Wi-Fi Drop Portal with Auto QR Code & Received Files Inbox -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.2"
+            android:orientation="vertical"
+            android:background="@drawable/bg_melody_card"
+            android:padding="14dp">
+
+            <!-- High Speed Web Drop with QR Code Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_melody_pill"
+                android:padding="10dp"
+                android:layout_marginBottom="10dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="⚡ High-Speed Wi-Fi Drop (50 MB/s)"
+                        android:textColor="#831843"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_web_drop_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:text="📷 Scan QR Code"
+                        android:textColor="#DB2777"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+
+                <!-- Horizontal layout: QR Code + Details -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <!-- QR Code Card -->
+                    <FrameLayout
+                        android:layout_width="106dp"
+                        android:layout_height="106dp"
+                        android:background="@drawable/bg_qr_white_card"
+                        android:padding="4dp"
+                        android:layout_marginEnd="12dp">
+
+                        <ImageView
+                            android:id="@+id/iv_web_drop_qr"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="fitCenter"
+                            android:contentDescription="Web Drop QR Code" />
+
+                        <ProgressBar
+                            android:id="@+id/pb_qr_loading"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_gravity="center"
+                            android:visibility="gone" />
+                    </FrameLayout>
+
+                    <!-- Text Info Column -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_web_drop_url"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="http://192.168.1.x:8989"
+                            android:textColor="#DB2777"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="4dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📷 Point phone camera at QR code to open file drop instantly!"
+                            android:textColor="#831843"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="3dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="✨ Works on iPhone, Android, iPad, PC &amp; Mac\n🚀 100x faster than Bluetooth (no pairing required)"
+                            android:textColor="#9D174D"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Received Files Inbox Header -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📥 Recently Received Files"
+                android:textColor="#831843"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <!-- Empty Received State -->
+            <TextView
+                android:id="@+id/tv_empty_received"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="No received files yet. When files are sent via Bluetooth or Wi-Fi Drop, they appear here! 🌸"
+                android:textColor="#9D174D"
+                android:textSize="12sp" />
+
+            <!-- Received Files RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_received_files"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:scrollbars="vertical"
+                android:visibility="gone" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Floating Live Transfer Progress Bar Card (Incoming & Outgoing) -->
+    <LinearLayout
+        android:id="@+id/card_transfer_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="14dp"
+        android:background="@drawable/bg_melody_card"
+        android:padding="14dp"
+        android:elevation="16dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp">
+
+            <TextView
+                android:id="@+id/tv_transfer_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/tv_transfer_percent"
+                android:text="📥 Receiving: file.jpg"
+                android:textColor="#831843"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/tv_transfer_percent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="0%"
+                android:textColor="#DB2777"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginStart="8dp" />
+        </RelativeLayout>
+
+        <ProgressBar
+            android:id="@+id/pb_transfer_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="12dp"
+            android:max="100"
+            android:progress="0"
+            android:progressDrawable="@drawable/bg_progress_melody"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tv_transfer_sub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 MB / 0 MB"
+            android:textColor="#9D174D"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_floating_battery_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/bg_melody_pill"
+    android:paddingStart="8dp"
+    android:paddingEnd="10dp"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp"
+    android:elevation="30dp"
+    android:clickable="true"
+    android:focusable="false">
+
+    <!-- Custom Battery Gauge with Percentage drawn INSIDE (No ribbon) -->
+    <com.kids.launcher.BatteryGaugeView
+        android:id="@+id/gauge_floating_battery"
+        android:layout_width="58dp"
+        android:layout_height="26dp"
+        android:clickable="false"
+        android:focusable="false" />
+
+    <!-- Charger Speed Indicator (Fast / Slow) visible when plugged in -->
+    <TextView
+        android:id="@+id/tv_floating_charger_speed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="⚡ Fast"
+        android:textColor="#0284C7"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:layout_marginStart="6dp"
+        android:visibility="gone"
+        android:clickable="false"
+        android:focusable="false" />
+
+</LinearLayout>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Teal / Sky Gradient Background -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <gradient
+                android:startColor="#38BDF8"
+                android:endColor="#0284C7"
+                android:angle="135" />
+            <stroke android:width="2dp" android:color="#FFFFFF" />
+        </shape>
+    </item>
+    <!-- White Shield / Globe Circle -->
+    <item android:top="14dp" android:bottom="14dp" android:left="14dp" android:right="14dp">
+        <shape android:shape="oval">
+            <solid android:color="#FFFFFF" />
+        </shape>
+    </item>
+    <!-- Inner Blue Globe -->
+    <item android:top="18dp" android:bottom="18dp" android:left="18dp" android:right="18dp">
+        <shape android:shape="oval">
+            <solid android:color="#E0F2FE" />
+            <stroke android:width="2dp" android:color="#0284C7" />
+        </shape>
+    </item>
+    <!-- Green Safe Check / Leaf Accent -->
+    <item android:top="26dp" android:bottom="26dp" android:left="26dp" android:right="26dp">
+        <shape android:shape="oval">
+            <solid android:color="#10B981" />
+        </shape>
+    </item>
+</layer-list>

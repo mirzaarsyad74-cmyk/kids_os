@@ -1,0 +1,627 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/bg_melody_card"
+    android:padding="12dp">
+
+    <!-- Top Header Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp">
+
+        <TextView
+            android:id="@+id/btn_clock_back"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:text="◀ Back"
+            android:textColor="#831843"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_melody_pill"
+            android:paddingHorizontal="14dp"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🌸 Melody Clock ⏰"
+            android:textColor="#831843"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <!-- Navigation Tabs: Clock, Alarm, Timer, Stopwatch -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_melody_pill"
+            android:padding="2dp">
+
+            <TextView
+                android:id="@+id/tab_clock"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="⏰ Clock"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_chip_selected"
+                android:paddingHorizontal="10dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:id="@+id/tab_alarm"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="🔔 Alarm"
+                android:textColor="#831843"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_chip_unselected"
+                android:paddingHorizontal="10dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:id="@+id/tab_timer"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="⏳ Timer"
+                android:textColor="#831843"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_chip_unselected"
+                android:paddingHorizontal="10dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:id="@+id/tab_stopwatch"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="⏱️ Stopwatch"
+                android:textColor="#831843"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_chip_unselected"
+                android:paddingHorizontal="10dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Main Content Container -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp">
+
+        <!-- 1. CLOCK VIEW -->
+        <LinearLayout
+            android:id="@+id/layout_view_clock"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/bg_melody_nav_button"
+            android:padding="20dp"
+            android:visibility="visible">
+
+            <TextView
+                android:id="@+id/tv_clock_time_big"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="11:30:00"
+                android:textColor="#831843"
+                android:textSize="64sp"
+                android:textStyle="bold"
+                android:shadowColor="#FFB3C6"
+                android:shadowDx="0"
+                android:shadowDy="3"
+                android:shadowRadius="6" />
+
+            <TextView
+                android:id="@+id/tv_clock_ampm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PM"
+                android:textColor="#BE185D"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="-8dp" />
+
+            <TextView
+                android:id="@+id/tv_clock_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tuesday, September 22"
+                android:textColor="#9D174D"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="14dp" />
+
+            <TextView
+                android:id="@+id/tv_clock_greeting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🌸 Have a magical and sparkly day! ✨"
+                android:textColor="#BE123C"
+                android:textSize="14sp"
+                android:background="@drawable/bg_melody_pill"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:layout_marginTop="16dp" />
+        </LinearLayout>
+
+        <!-- 2. ALARM VIEW (Multi-Alarm & Sound Selection) -->
+        <LinearLayout
+            android:id="@+id/layout_view_alarm"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_melody_nav_button"
+            android:padding="12dp"
+            android:visibility="gone">
+
+            <!-- LEFT COLUMN: Multi-Alarm List -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.2"
+                android:orientation="vertical"
+                android:paddingEnd="10dp">
+
+                <!-- Header Bar -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="⏰ My Alarms"
+                        android:textColor="#831843"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_alarms_count_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="24dp"
+                        android:text="3 Alarms"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/bg_melody_chip_selected"
+                        android:paddingHorizontal="10dp"
+                        android:gravity="center" />
+                </LinearLayout>
+
+                <!-- Alarms Scrollable Container -->
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:fillViewport="true">
+
+                    <LinearLayout
+                        android:id="@+id/layout_alarms_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_no_alarms"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="No alarms set yet 🌸\nUse the panel on the right to add one! ✨"
+                            android:textColor="#BE185D"
+                            android:textSize="13sp"
+                            android:visibility="gone"
+                            android:padding="20dp" />
+                    </LinearLayout>
+                </ScrollView>
+            </LinearLayout>
+
+            <!-- Vertical Divider -->
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="#FCE7F3"
+                android:layout_marginHorizontal="6dp" />
+
+            <!-- RIGHT COLUMN: Add / Customize Alarm -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:paddingStart="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🌸 Add New Alarm ✨"
+                    android:textColor="#831843"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp" />
+
+                <!-- Time Adjuster -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
+
+                    <!-- Hour Section -->
+                    <LinearLayout
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/btn_new_alarm_hour_plus"
+                            android:layout_width="40dp"
+                            android:layout_height="26dp"
+                            android:text="▲"
+                            android:textSize="14sp"
+                            android:textColor="#831843"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:background="@drawable/bg_melody_pill"
+                            android:clickable="true"
+                            android:focusable="true" />
+
+                        <TextView
+                            android:id="@+id/tv_new_alarm_hour"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="07"
+                            android:textSize="38sp"
+                            android:textColor="#831843"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/btn_new_alarm_hour_minus"
+                            android:layout_width="40dp"
+                            android:layout_height="26dp"
+                            android:text="▼"
+                            android:textSize="14sp"
+                            android:textColor="#831843"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:background="@drawable/bg_melody_pill"
+                            android:clickable="true"
+                            android:focusable="true" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=":"
+                        android:textSize="36sp"
+                        android:textColor="#BE185D"
+                        android:textStyle="bold"
+                        android:layout_marginHorizontal="6dp"
+                        android:layout_marginTop="-4dp" />
+
+                    <!-- Minute Section -->
+                    <LinearLayout
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/btn_new_alarm_minute_plus"
+                            android:layout_width="40dp"
+                            android:layout_height="26dp"
+                            android:text="▲"
+                            android:textSize="14sp"
+                            android:textColor="#831843"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:background="@drawable/bg_melody_pill"
+                            android:clickable="true"
+                            android:focusable="true" />
+
+                        <TextView
+                            android:id="@+id/tv_new_alarm_minute"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="00"
+                            android:textSize="38sp"
+                            android:textColor="#831843"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/btn_new_alarm_minute_minus"
+                            android:layout_width="40dp"
+                            android:layout_height="26dp"
+                            android:text="▼"
+                            android:textSize="14sp"
+                            android:textColor="#831843"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:background="@drawable/bg_melody_pill"
+                            android:clickable="true"
+                            android:focusable="true" />
+                    </LinearLayout>
+
+                    <!-- AM/PM Toggle Button -->
+                    <TextView
+                        android:id="@+id/btn_new_alarm_ampm"
+                        android:layout_width="48dp"
+                        android:layout_height="38dp"
+                        android:text="AM"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF"
+                        android:background="@drawable/bg_melody_chip_selected"
+                        android:gravity="center"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_marginStart="8dp" />
+                </LinearLayout>
+
+                <!-- Sound Selector Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="34dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:id="@+id/btn_select_sound"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="🎵 🌸 Sweet Melody ▾"
+                        android:textColor="#831843"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/bg_melody_pill"
+                        android:gravity="center_vertical|start"
+                        android:paddingHorizontal="10dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/btn_preview_sound"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:text="▶ Listen"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/bg_melody_chip_selected"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_marginStart="6dp" />
+                </LinearLayout>
+
+                <!-- Quick Presets Row -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp">
+
+                    <TextView
+                        android:id="@+id/btn_new_preset_wake"
+                        style="@style/MelodyTimerPreset"
+                        android:text="☀️ 7:00 AM" />
+                    <TextView
+                        android:id="@+id/btn_new_preset_lunch"
+                        style="@style/MelodyTimerPreset"
+                        android:text="🍱 12:30 PM" />
+                    <TextView
+                        android:id="@+id/btn_new_preset_sleep"
+                        style="@style/MelodyTimerPreset"
+                        android:text="🌙 8:00 PM" />
+                </LinearLayout>
+
+                <!-- Add Button -->
+                <TextView
+                    android:id="@+id/btn_add_alarm_submit"
+                    android:layout_width="match_parent"
+                    android:layout_height="38dp"
+                    android:text="➕ Add This Alarm ✨"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_chip_selected"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 3. TIMER VIEW -->
+        <LinearLayout
+            android:id="@+id/layout_view_timer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/bg_melody_nav_button"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <!-- Presets: 1m, 3m, 5m, 10m, 15m, 30m -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/btn_timer_1m"
+                    style="@style/MelodyTimerPreset"
+                    android:text="1 min" />
+                <TextView
+                    android:id="@+id/btn_timer_3m"
+                    style="@style/MelodyTimerPreset"
+                    android:text="3 min" />
+                <TextView
+                    android:id="@+id/btn_timer_5m"
+                    style="@style/MelodyTimerPreset"
+                    android:text="5 min" />
+                <TextView
+                    android:id="@+id/btn_timer_10m"
+                    style="@style/MelodyTimerPreset"
+                    android:text="10 min" />
+                <TextView
+                    android:id="@+id/btn_timer_15m"
+                    style="@style/MelodyTimerPreset"
+                    android:text="15 min" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_timer_display"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="05:00"
+                android:textColor="#831843"
+                android:textSize="58sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_timer_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ready for playtime or study!"
+                android:textColor="#9D174D"
+                android:textSize="14sp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btn_timer_start_pause"
+                    android:layout_width="120dp"
+                    android:layout_height="42dp"
+                    android:text="▶ Start"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_chip_selected"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginEnd="12dp" />
+
+                <TextView
+                    android:id="@+id/btn_timer_reset"
+                    android:layout_width="100dp"
+                    android:layout_height="42dp"
+                    android:text="🔄 Reset"
+                    android:textColor="#831843"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_pill"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 3. STOPWATCH VIEW -->
+        <LinearLayout
+            android:id="@+id/layout_view_stopwatch"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/bg_melody_nav_button"
+            android:padding="20dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_stopwatch_display"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00:00.0"
+                android:textColor="#831843"
+                android:textSize="58sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⏱️ Sparkle Speed Run ✨"
+                android:textColor="#9D174D"
+                android:textSize="14sp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btn_stopwatch_start_pause"
+                    android:layout_width="120dp"
+                    android:layout_height="42dp"
+                    android:text="▶ Start"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_chip_selected"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginEnd="12dp" />
+
+                <TextView
+                    android:id="@+id/btn_stopwatch_reset"
+                    android:layout_width="100dp"
+                    android:layout_height="42dp"
+                    android:text="🔄 Reset"
+                    android:textColor="#831843"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_pill"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </FrameLayout>
+
+</LinearLayout>

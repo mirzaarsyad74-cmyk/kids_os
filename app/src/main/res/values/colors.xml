@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Girl Theme Cartoon Melody Pink Palette -->
+    <color name="melody_pink_primary">#FF4D8D</color>
+    <color name="melody_pink_dark">#9D174D</color>
+    <color name="melody_pink_vibrant">#FF2A85</color>
+    <color name="melody_pink_light">#FFE4EC</color>
+    <color name="melody_pink_cream">#FFF5F8</color>
+    <color name="melody_pink_card">#FFFFFF</color>
+    <color name="melody_pink_stroke">#FFC0D3</color>
+    <color name="melody_lavender">#E8D5FF</color>
+    <color name="melody_yellow">#FEF08A</color>
+    <color name="melody_gold">#FBBF24</color>
+    <color name="melody_peach">#FED7AA</color>
+    
+    <!-- Background Gradient: Sweet Sunset Cotton Candy Pink -->
+    <color name="melody_sky_start">#FF8DAE</color>
+    <color name="melody_sky_mid">#FFAEC9</color>
+    <color name="melody_sky_end">#FFD6E5</color>
+    
+    <!-- Text Colors -->
+    <color name="text_melody_title">#831843</color>
+    <color name="text_melody_subtitle">#9D174D</color>
+    <color name="text_melody_body">#4A044E</color>
+    <color name="text_melody_light">#FFFFFF</color>
+    
+    <!-- Legacy Mappings for Compatibility -->
+    <color name="kids_primary">#FF4D8D</color>
+    <color name="kids_primary_dark">#9D174D</color>
+    <color name="kids_accent">#FBBF24</color>
+    <color name="kids_sky_end">#FFD6E5</color>
+</resources>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Top Border Line -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#FFB3C6" />
+        </shape>
+    </item>
+    <!-- Background Body with 2dp top inset for the border -->
+    <item android:top="2dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#F7FFFFFF"
+                android:endColor="#F2FFF0F5"
+                android:angle="270" />
+        </shape>
+    </item>
+</layer-list>

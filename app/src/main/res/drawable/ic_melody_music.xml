@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sweet Lavender/Pink Pastel Gradient Background -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <gradient
+                android:startColor="#E9D5FF"
+                android:endColor="#C084FC"
+                android:angle="135" />
+            <stroke android:width="2dp" android:color="#FFFFFF" />
+        </shape>
+    </item>
+    <!-- Cute Inner Vinyl Disc -->
+    <item android:top="14dp" android:bottom="14dp" android:left="14dp" android:right="14dp">
+        <shape android:shape="oval">
+            <solid android:color="#FF4D8D" />
+            <stroke android:width="2dp" android:color="#FFFFFF" />
+        </shape>
+    </item>
+    <!-- Cute Disc Center -->
+    <item android:top="28dp" android:bottom="28dp" android:left="28dp" android:right="28dp">
+        <shape android:shape="oval">
+            <solid android:color="#FFF0F5" />
+            <stroke android:width="2dp" android:color="#FF65A5" />
+        </shape>
+    </item>
+</layer-list>

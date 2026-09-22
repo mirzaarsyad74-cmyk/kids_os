@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/card_recent_app"
+    android:layout_width="140dp"
+    android:layout_height="165dp"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:background="@drawable/bg_melody_card"
+    android:padding="8dp"
+    android:layout_marginEnd="12dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Top bar with close button -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/btn_dismiss_recent"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:text="✕"
+            android:textColor="#FF2A85"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:background="@drawable/bg_melody_nav_button"
+            android:clickable="true"
+            android:focusable="true" />
+    </RelativeLayout>
+
+    <!-- App Icon -->
+    <ImageView
+        android:id="@+id/iv_recent_icon"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_marginTop="2dp"
+        android:contentDescription="Recent App Icon" />
+
+    <!-- App Name -->
+    <TextView
+        android:id="@+id/tv_recent_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Barbiecore"
+        android:textColor="#831843"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:layout_marginTop="6dp" />
+
+    <TextView
+        android:id="@+id/tv_recent_badge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🎮 Game"
+        android:textColor="#9D174D"
+        android:textSize="10sp"
+        android:background="#FFE4EC"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="2dp"
+        android:layout_marginTop="4dp" />
+
+    <!-- Switch Button -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="26dp"
+        android:text="Switch ➔"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:background="@drawable/bg_melody_chip_selected"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>

@@ -1,0 +1,1188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0F0B1E"
+    android:padding="12dp">
+
+    <!-- Top Navigation Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <Button
+            android:id="@+id/btn_back_to_kids"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:text="← Back to Kids Space"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:backgroundTint="#37246B"
+            app:cornerRadius="14dp"
+            android:paddingHorizontal="12dp" />
+
+        <!-- Navigation Tabs -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginHorizontal="8dp">
+
+            <Button
+                android:id="@+id/tab_btn_apps"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="📱 Apps"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:backgroundTint="#FF4D8D"
+                app:cornerRadius="10dp"
+                android:layout_marginEnd="4dp" />
+
+            <Button
+                android:id="@+id/tab_btn_time"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="⏰ Time"
+                android:textColor="#D1D5DB"
+                android:textSize="11sp"
+                android:backgroundTint="#26174D"
+                app:cornerRadius="10dp"
+                android:layout_marginEnd="4dp" />
+
+            <Button
+                android:id="@+id/tab_btn_stats"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="📊 Stats"
+                android:textColor="#D1D5DB"
+                android:textSize="11sp"
+                android:backgroundTint="#26174D"
+                app:cornerRadius="10dp"
+                android:layout_marginEnd="4dp" />
+
+            <Button
+                android:id="@+id/tab_btn_android"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="⚙️ Android OS"
+                android:textColor="#D1D5DB"
+                android:textSize="11sp"
+                android:backgroundTint="#26174D"
+                app:cornerRadius="10dp"
+                android:layout_marginEnd="4dp" />
+
+            <Button
+                android:id="@+id/tab_btn_security"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="🔒 Security"
+                android:textColor="#D1D5DB"
+                android:textSize="11sp"
+                android:backgroundTint="#26174D"
+                app:cornerRadius="10dp" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_exit_to_android"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:text="Exit to Android"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:backgroundTint="#E11D48"
+            app:cornerRadius="14dp"
+            android:paddingHorizontal="12dp" />
+
+    </LinearLayout>
+
+    <!-- Content Area for the 5 Tabs -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- TAB 1: APPS MANAGEMENT -->
+        <LinearLayout
+            android:id="@+id/layout_tab_apps"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <!-- Category Quick-Locks Left Sidebar -->
+            <LinearLayout
+                android:layout_width="260dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:background="#1B1336"
+                android:padding="12dp"
+                android:layout_marginEnd="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🚫 Quick Category Locks"
+                    android:textColor="#F472B6"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="10dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="10dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Lock All Games\n(Study Time)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switch_lock_games"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:thumbTint="#FF2A85"
+                        app:trackTint="#A855F7" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Block Internet\n(Safe Browsing)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switch_lock_browsers"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:thumbTint="#FF2A85"
+                        app:trackTint="#A855F7" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Auto Battery Saver\n(Auto ON when &lt; 20%)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switch_auto_battery_saver"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:thumbTint="#FF2A85"
+                        app:trackTint="#A855F7" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Full Battery Sound Notice\n(Chime alert at 100% full)"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switch_full_battery_alert"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:thumbTint="#FF2A85"
+                        app:trackTint="#A855F7" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#332463"
+                    android:layout_marginBottom="10dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💡 Tip: You can toggle individual apps on the right list anytime."
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+
+            </LinearLayout>
+
+            <!-- Apps Whitelist List -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="#1B1336"
+                android:padding="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="📱 Allowed Apps for Child"
+                        android:textColor="#34D399"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_select_all"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:text="All"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:backgroundTint="#4F46E5"
+                        app:cornerRadius="8dp"
+                        android:layout_marginEnd="4dp" />
+
+                    <Button
+                        android:id="@+id/btn_deselect_all"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:text="None"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:backgroundTint="#374151"
+                        app:cornerRadius="8dp"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/tv_app_count_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 selected"
+                        android:textColor="#C7D2FE"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <!-- Pending App Installs Waiting For Parent Approval -->
+                <LinearLayout
+                    android:id="@+id/layout_pending_approvals"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="#371E40"
+                    android:padding="8dp"
+                    android:layout_marginBottom="6dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⚠️ New Apps Installed - Require Parent Approval"
+                        android:textColor="#F472B6"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp" />
+
+                    <LinearLayout
+                        android:id="@+id/container_pending_apps"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+                </LinearLayout>
+
+                <EditText
+                    android:id="@+id/et_search_apps"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:hint="🔍 Search apps..."
+                    android:textColorHint="#6B7280"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:background="#26174D"
+                    android:paddingHorizontal="10dp"
+                    android:layout_marginBottom="6dp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_parent_apps"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- TAB 2: TIME, BEDTIME & BREAK CONTROLS -->
+        <LinearLayout
+            android:id="@+id/layout_tab_time"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="#1B1336"
+                android:padding="16dp"
+                android:layout_marginEnd="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⏱️ Daily Playtime Limit"
+                    android:textColor="#F472B6"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <RadioGroup
+                    android:id="@+id/rg_time_limits"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <RadioButton
+                        android:id="@+id/rb_unlimited"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Unlimited Time"
+                        android:textColor="#FFFFFF"
+                        android:buttonTint="#FF2A85" />
+
+                    <RadioButton
+                        android:id="@+id/rb_15m"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="15 Minutes"
+                        android:textColor="#FFFFFF"
+                        android:buttonTint="#FF2A85" />
+
+                    <RadioButton
+                        android:id="@+id/rb_30m"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="30 Minutes"
+                        android:textColor="#FFFFFF"
+                        android:buttonTint="#FF2A85" />
+
+                    <RadioButton
+                        android:id="@+id/rb_60m"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="60 Minutes"
+                        android:textColor="#FFFFFF"
+                        android:buttonTint="#FF2A85" />
+
+                </RadioGroup>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="#1B1336"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="🌙 Bedtime Curfew Lockout"
+                        android:textColor="#A78BFA"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switch_bedtime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:thumbTint="#8B5CF6"
+                        app:trackTint="#C084FC" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_bedtime_desc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Locks tablet daily between 8:00 PM and 7:00 AM."
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp"
+                    android:layout_marginBottom="12dp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#332463"
+                    android:layout_marginBottom="12dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="👀 Eye-Protection Break Timer"
+                        android:textColor="#34D399"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switch_eye_break"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:thumbTint="#10B981"
+                        app:trackTint="#6EE7B7" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mandatory 3-minute eye relaxation break every 20 minutes to prevent myopia."
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp"
+                    android:layout_marginBottom="12dp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#332463"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Blue Light Filter (Night Mode) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="🌙 Blue Light / Night Shield"
+                        android:textColor="#FBBF24"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switch_blue_light"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:thumbTint="#F59E0B"
+                        app:trackTint="#FDE68A" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Applies gentle warm amber tint to reduce eye strain."
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Posture Reminder -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="🧸 Posture Reminder"
+                        android:textColor="#EC4899"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switch_posture_reminder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:thumbTint="#DB2777"
+                        app:trackTint="#FBCFE8" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gently reminds child to sit upright every 35 minutes."
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- 70% Volume Limiter -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="🎧 Ear Protection Volume Cap (70%)"
+                        android:textColor="#60A5FA"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switch_volume_limiter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:thumbTint="#2563EB"
+                        app:trackTint="#BFDBFE" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Caps media volume to protect young developing hearing."
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- TAB 3: USAGE STATS -->
+        <LinearLayout
+            android:id="@+id/layout_tab_stats"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="#1B1336"
+            android:padding="20dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📊 Today's Screen Time Summary"
+                android:textColor="#F472B6"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:id="@+id/tv_stats_time_spent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Time Active Today: 0 minutes"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:layout_marginBottom="8dp" />
+
+            <ProgressBar
+                android:id="@+id/pb_daily_usage"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="12dp"
+                android:progressTint="#FF2A85"
+                android:progressBackgroundTint="#37246B"
+                android:max="60"
+                android:progress="10"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:id="@+id/tv_stats_apps_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total Allowed Apps: 7 apps"
+                android:textColor="#A5B4FC"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tv_stats_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Current Status: Active (Within Limits) 🟢"
+                android:textColor="#34D399"
+                android:textSize="13sp"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:id="@+id/tv_stats_vs_yesterday"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📈 Trend: Balanced playtime compared to yesterday ✨"
+                android:textColor="#C7D2FE"
+                android:textSize="12sp"
+                android:layout_marginBottom="14dp" />
+
+            <!-- Top 3 Most Used Apps -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⭐ Top Used Apps Today"
+                android:textColor="#F472B6"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:id="@+id/container_top_apps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="12dp" />
+
+            <Button
+                android:id="@+id/btn_grant_usage_stats"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="⚙️ Enable Detailed App Usage Analytics"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:backgroundTint="#37246B"
+                app:cornerRadius="10dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <!-- TAB 4: ANDROID OS SETTINGS HUB -->
+        <LinearLayout
+            android:id="@+id/layout_tab_android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="#1B1336"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚙️ Android OS System Settings"
+                android:textColor="#60A5FA"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quickly access native tablet system configurations:"
+                android:textColor="#9CA3AF"
+                android:textSize="11sp"
+                android:layout_marginBottom="12dp" />
+
+            <!-- 3-Column Grid of Settings Tiles -->
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="3"
+                android:alignmentMode="alignMargins">
+
+                <!-- Wi-Fi Tile -->
+                <LinearLayout
+                    android:id="@+id/tile_wifi"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_setting_tile"
+                    android:padding="14dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📶"
+                        android:textSize="26sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Wi-Fi Network"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="6dp" />
+
+                </LinearLayout>
+
+                <!-- Sound Tile -->
+                <LinearLayout
+                    android:id="@+id/tile_sound"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_setting_tile"
+                    android:padding="14dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔊"
+                        android:textSize="26sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sound &amp; Volume"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="6dp" />
+
+                </LinearLayout>
+
+                <!-- Display Tile -->
+                <LinearLayout
+                    android:id="@+id/tile_display"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_setting_tile"
+                    android:padding="14dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="☀️"
+                        android:textSize="26sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Display &amp; Sleep"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="6dp" />
+
+                </LinearLayout>
+
+                <!-- Battery Tile -->
+                <LinearLayout
+                    android:id="@+id/tile_battery"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_setting_tile"
+                    android:padding="14dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔋"
+                        android:textSize="26sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Battery Health"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="6dp" />
+
+                </LinearLayout>
+
+                <!-- Master Android Settings -->
+                <LinearLayout
+                    android:id="@+id/tile_master_settings"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_setting_tile"
+                    android:padding="14dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⚙️"
+                        android:textSize="26sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="All Settings"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="6dp" />
+
+                </LinearLayout>
+
+                <!-- Home Apps Tile -->
+                <LinearLayout
+                    android:id="@+id/tile_home_apps"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_setting_tile"
+                    android:padding="14dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🏠"
+                        android:textSize="26sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Home App"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="6dp" />
+
+                </LinearLayout>
+
+            </GridLayout>
+
+        </LinearLayout>
+
+        <!-- TAB 5: SECURITY, SOS, SAFE WEB & LOCATION -->
+        <ScrollView
+            android:id="@+id/layout_tab_security"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#1B1336"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- 1. Parent Security PIN -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔑 Parent Security PIN"
+                    android:textColor="#A78BFA"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Default PIN is 1234. Change it below:"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="320dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
+
+                    <EditText
+                        android:id="@+id/et_new_pin"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:hint="4-digit PIN"
+                        android:textColorHint="#6B7280"
+                        android:textColor="#FFFFFF"
+                        android:inputType="numberPassword"
+                        android:maxLength="4"
+                        android:gravity="center"
+                        android:background="#2D1B69"
+                        android:paddingHorizontal="10dp"
+                        android:textSize="13sp" />
+
+                    <Button
+                        android:id="@+id/btn_save_pin"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="Save PIN"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:backgroundTint="#8B5CF6"
+                        android:layout_marginStart="8dp" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#332463"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- 2. SOS / Emergency Contact -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📞 Emergency / SOS Contact"
+                    android:textColor="#F43F5E"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Configures the '📞 SOS' button on the launcher for fast emergency dialing:"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
+
+                    <EditText
+                        android:id="@+id/et_sos_name"
+                        android:layout_width="160dp"
+                        android:layout_height="40dp"
+                        android:hint="Contact Name (e.g. Mama)"
+                        android:textColorHint="#6B7280"
+                        android:textColor="#FFFFFF"
+                        android:background="#2D1B69"
+                        android:paddingHorizontal="10dp"
+                        android:textSize="12sp"
+                        android:layout_marginEnd="8dp" />
+
+                    <EditText
+                        android:id="@+id/et_sos_number"
+                        android:layout_width="180dp"
+                        android:layout_height="40dp"
+                        android:hint="Phone (e.g. 0123456789)"
+                        android:textColorHint="#6B7280"
+                        android:textColor="#FFFFFF"
+                        android:inputType="phone"
+                        android:background="#2D1B69"
+                        android:paddingHorizontal="10dp"
+                        android:textSize="12sp"
+                        android:layout_marginEnd="8dp" />
+
+                    <Button
+                        android:id="@+id/btn_save_sos"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="Save SOS"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:backgroundTint="#F43F5E" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#332463"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- 3. Safe Browsing Whitelist -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🛡️ Safe Browsing Whitelist"
+                    android:textColor="#34D399"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Websites child is allowed to visit in Safe Browser. Non-listed domains are blocked:"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp">
+
+                    <EditText
+                        android:id="@+id/et_safe_domain"
+                        android:layout_width="260dp"
+                        android:layout_height="40dp"
+                        android:hint="Add domain (e.g. coolmathgames.com)"
+                        android:textColorHint="#6B7280"
+                        android:textColor="#FFFFFF"
+                        android:background="#2D1B69"
+                        android:paddingHorizontal="10dp"
+                        android:textSize="12sp"
+                        android:layout_marginEnd="8dp" />
+
+                    <Button
+                        android:id="@+id/btn_add_domain"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="➕ Add Domain"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:backgroundTint="#10B981" />
+                </LinearLayout>
+
+                <!-- Whitelist Domains Chips -->
+                <LinearLayout
+                    android:id="@+id/layout_whitelist_domains"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#332463"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- 4. Tablet Location Sharing -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📍 Device Location Sharing"
+                    android:textColor="#60A5FA"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/tv_location_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Location: Fetching GPS coordinates..."
+                    android:textColor="#C7D2FE"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="20dp">
+
+                    <Button
+                        android:id="@+id/btn_open_maps"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:text="🗺️ Open in Google Maps"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:backgroundTint="#3B82F6"
+                        android:layout_marginEnd="8dp" />
+
+                    <Button
+                        android:id="@+id/btn_refresh_location"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:text="🔄 Refresh GPS"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:backgroundTint="#26174D" />
+                </LinearLayout>
+
+                <!-- 5. Reset Timer -->
+                <Button
+                    android:id="@+id/btn_reset_timer"
+                    android:layout_width="260dp"
+                    android:layout_height="38dp"
+                    android:text="🔄 Reset Daily Screen Timer to 0"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:backgroundTint="#37246B"
+                    app:cornerRadius="10dp" />
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </FrameLayout>
+
+</LinearLayout>

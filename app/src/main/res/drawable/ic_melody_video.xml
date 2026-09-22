@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+
+    <!-- Soft Pink Gradient Background Circle -->
+    <path
+        android:fillColor="#FCE7F3"
+        android:pathData="M32,32m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0" />
+
+    <path
+        android:strokeColor="#F472B6"
+        android:strokeWidth="2"
+        android:pathData="M32,32m-29,0a29,29 0,1 1,58 0a29,29 0,1 1,-58 0" />
+
+    <!-- Cute Clapperboard / Video Player Screen -->
+    <path
+        android:fillColor="#831843"
+        android:pathData="M16,22 C16,20.9 16.9,20 18,20 L46,20 C47.1,20 48,20.9 48,22 L48,44 C48,45.1 47.1,46 46,46 L18,46 C16.9,46 16,45.1 16,44 Z" />
+
+    <!-- Play Button Triangle inside Screen -->
+    <path
+        android:fillColor="#F472B6"
+        android:pathData="M28,27 L40,33 L28,39 Z" />
+
+    <!-- Film Sprocket Stripes at Top -->
+    <path
+        android:fillColor="#FCE7F3"
+        android:pathData="M18,21 L22,25 L24,25 L20,21 Z M26,21 L30,25 L32,25 L28,21 Z M34,21 L38,25 L40,25 L36,21 Z M42,21 L46,25 L48,25 L44,21 Z" />
+
+    <!-- Sparkle Star -->
+    <path
+        android:fillColor="#FFD1DC"
+        android:pathData="M48,16 L49,19 L52,20 L49,21 L48,24 L47,21 L44,20 L47,19 Z" />
+
+</vector>

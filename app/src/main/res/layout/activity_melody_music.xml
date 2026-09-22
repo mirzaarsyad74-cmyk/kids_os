@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_melody_sky">
+
+    <!-- Top Header Bar -->
+    <LinearLayout
+        android:id="@+id/layout_music_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="10dp"
+        android:background="#66FFFFFF"
+        android:layout_alignParentTop="true">
+
+        <TextView
+            android:id="@+id/btn_music_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="◀ Back"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_melody_chip_selected"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="6dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🌸 My Music Player 🎵"
+            android:textColor="#831843"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/btn_music_rescan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔄 Scan Files"
+            android:textColor="#831843"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_melody_pill"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:clickable="true"
+            android:focusable="true" />
+    </LinearLayout>
+
+    <!-- Main Content Area: Split 2 Columns -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_below="@id/layout_music_header"
+        android:padding="12dp">
+
+        <!-- Left Column: Spinning Vinyl Record, Track Info, Progress Bar, Controls -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.95"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:background="@drawable/bg_melody_card"
+            android:padding="14dp"
+            android:layout_marginEnd="10dp">
+
+            <!-- Vinyl Record Frame -->
+            <FrameLayout
+                android:layout_width="170dp"
+                android:layout_height="170dp"
+                android:layout_gravity="center">
+
+                <View
+                    android:id="@+id/view_vinyl_disk"
+                    android:layout_width="170dp"
+                    android:layout_height="170dp"
+                    android:background="@drawable/bg_avatar_circle" />
+
+                <!-- Center Melody Label -->
+                <LinearLayout
+                    android:layout_width="68dp"
+                    android:layout_height="68dp"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:background="@drawable/bg_melody_avatar">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🐰🎵"
+                        android:textSize="22sp" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <!-- Dancing Visualizer Bars -->
+            <LinearLayout
+                android:id="@+id/layout_visualizer_bars"
+                android:layout_width="180dp"
+                android:layout_height="20dp"
+                android:orientation="horizontal"
+                android:gravity="bottom|center_horizontal"
+                android:layout_marginTop="8dp">
+
+                <View android:id="@+id/v_bar_1" android:layout_width="7dp" android:layout_height="6dp" android:background="#FF4D8D" android:layout_marginEnd="4dp" />
+                <View android:id="@+id/v_bar_2" android:layout_width="7dp" android:layout_height="12dp" android:background="#FF65A5" android:layout_marginEnd="4dp" />
+                <View android:id="@+id/v_bar_3" android:layout_width="7dp" android:layout_height="18dp" android:background="#C084FC" android:layout_marginEnd="4dp" />
+                <View android:id="@+id/v_bar_4" android:layout_width="7dp" android:layout_height="10dp" android:background="#FF4D8D" android:layout_marginEnd="4dp" />
+                <View android:id="@+id/v_bar_5" android:layout_width="7dp" android:layout_height="20dp" android:background="#FF65A5" android:layout_marginEnd="4dp" />
+                <View android:id="@+id/v_bar_6" android:layout_width="7dp" android:layout_height="14dp" android:background="#C084FC" android:layout_marginEnd="4dp" />
+                <View android:id="@+id/v_bar_7" android:layout_width="7dp" android:layout_height="8dp" android:background="#FF4D8D" android:layout_marginEnd="4dp" />
+                <View android:id="@+id/v_bar_8" android:layout_width="7dp" android:layout_height="18dp" android:background="#FF65A5" android:layout_marginEnd="4dp" />
+                <View android:id="@+id/v_bar_9" android:layout_width="7dp" android:layout_height="10dp" android:background="#C084FC" android:layout_marginEnd="4dp" />
+                <View android:id="@+id/v_bar_10" android:layout_width="7dp" android:layout_height="14dp" android:background="#FF4D8D" />
+            </LinearLayout>
+
+            <!-- Song Title & Subtitle -->
+            <TextView
+                android:id="@+id/tv_song_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No Music Selected"
+                android:textColor="#831843"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:layout_marginTop="6dp" />
+
+            <TextView
+                android:id="@+id/tv_song_subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Add MP3 to tablet storage"
+                android:textColor="#9D174D"
+                android:textSize="11sp"
+                android:gravity="center"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:layout_marginBottom="6dp" />
+
+            <!-- Interactive Progress Bar (SeekBar) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginVertical="4dp">
+
+                <TextView
+                    android:id="@+id/tv_current_time"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:text="00:00"
+                    android:textColor="#831843"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:gravity="end" />
+
+                <SeekBar
+                    android:id="@+id/sb_music_progress"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:max="1000"
+                    android:progress="0"
+                    android:progressDrawable="@drawable/seekbar_progress_melody"
+                    android:thumb="@drawable/thumb_melody_music"
+                    android:splitTrack="false"
+                    android:paddingHorizontal="10dp" />
+
+                <TextView
+                    android:id="@+id/tv_total_time"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:text="00:00"
+                    android:textColor="#831843"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:gravity="start" />
+            </LinearLayout>
+
+            <!-- Transport Controls Row: Shuffle, Prev, Play/Pause, Next, Repeat -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical|center_horizontal"
+                android:layout_marginTop="8dp">
+
+                <!-- Shuffle Button -->
+                <TextView
+                    android:id="@+id/btn_music_shuffle"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:text="🔀"
+                    android:textSize="16sp"
+                    android:gravity="center"
+                    android:background="@drawable/bg_melody_pill"
+                    android:layout_marginEnd="10dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- Prev Button -->
+                <TextView
+                    android:id="@+id/btn_music_prev"
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:text="⏮"
+                    android:textColor="#831843"
+                    android:textSize="18sp"
+                    android:gravity="center"
+                    android:background="@drawable/bg_melody_pill"
+                    android:layout_marginEnd="10dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- Play/Pause Button -->
+                <TextView
+                    android:id="@+id/btn_music_play_pause"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:text="▶"
+                    android:textColor="#FFFFFF"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@drawable/bg_melody_chip_selected"
+                    android:layout_marginEnd="10dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- Next Button -->
+                <TextView
+                    android:id="@+id/btn_music_next"
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:text="⏭"
+                    android:textColor="#831843"
+                    android:textSize="18sp"
+                    android:gravity="center"
+                    android:background="@drawable/bg_melody_pill"
+                    android:layout_marginEnd="10dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- Repeat Button -->
+                <TextView
+                    android:id="@+id/btn_music_repeat"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:text="🔁"
+                    android:textSize="16sp"
+                    android:gravity="center"
+                    android:background="@drawable/bg_melody_pill"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_playing_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🌸 Ready to Play 🎵"
+                android:textColor="#9D174D"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+
+        <!-- Right Column: Search Bar & Playlist Queue -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.05"
+            android:orientation="vertical"
+            android:background="@drawable/bg_melody_card"
+            android:padding="14dp">
+
+            <!-- Playlist Header & Count -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:id="@+id/tv_playlist_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:text="📋 Playlist Queue"
+                    android:textColor="#831843"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_playlist_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="0 Songs"
+                    android:textColor="#9D174D"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_pill"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp" />
+            </RelativeLayout>
+
+            <!-- Search / Filter Input Box -->
+            <EditText
+                android:id="@+id/et_search_music"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:background="@drawable/bg_melody_pill"
+                android:hint="🔍 Search songs or artist..."
+                android:textColor="#831843"
+                android:textColorHint="#9D174D"
+                android:textSize="12sp"
+                android:paddingHorizontal="14dp"
+                android:singleLine="true"
+                android:layout_marginBottom="10dp" />
+
+            <!-- Empty State when no music files found -->
+            <LinearLayout
+                android:id="@+id/layout_empty_music"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="16dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📁🎵"
+                    android:textSize="36sp"
+                    android:layout_marginBottom="6dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No Music Files Found"
+                    android:textColor="#831843"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Put your favorite MP3 or audio files in the 'Music' or 'Download' folder on this tablet to play them anytime! 💕"
+                    android:textColor="#9D174D"
+                    android:textSize="11sp"
+                    android:gravity="center"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:id="@+id/btn_empty_rescan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔄 Refresh Storage"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_chip_selected"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="8dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <!-- RecyclerView Playlist -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_music_playlist"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:scrollbars="vertical" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+
+    <!-- Soft Pink Gradient Background Circle -->
+    <path
+        android:fillColor="#FCE7F3"
+        android:pathData="M32,32m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0" />
+
+    <path
+        android:strokeColor="#F472B6"
+        android:strokeWidth="2"
+        android:pathData="M32,32m-29,0a29,29 0,1 1,58 0a29,29 0,1 1,-58 0" />
+
+    <!-- Cute Pastel Pink Folder -->
+    <path
+        android:fillColor="#F472B6"
+        android:pathData="M14,20 L26,20 L30,24 L50,24 C51.1,24 52,24.9 52,26 L52,46 C52,47.1 51.1,48 50,48 L14,48 C12.9,48 12,47.1 12,46 L12,22 C12,20.9 12.9,20 14,20 Z" />
+
+    <path
+        android:fillColor="#DB2777"
+        android:pathData="M12,28 L52,28 L50,46 C50,47.1 49.1,48 48,48 L16,48 C14.9,48 14,47.1 13.8,46 L12,28 Z" />
+
+    <!-- Cute Heart Emblem on Folder -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,35 C30,33 27,33 27,36 C27,38.5 32,42 32,42 C32,42 37,38.5 37,36 C37,33 34,33 32,35 Z" />
+
+</vector>

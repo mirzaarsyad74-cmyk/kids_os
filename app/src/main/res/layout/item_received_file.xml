@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/bg_melody_pill"
+    android:padding="10dp"
+    android:layout_marginBottom="6dp">
+
+    <TextView
+        android:id="@+id/tv_received_icon"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:gravity="center"
+        android:background="@drawable/bg_avatar_circle"
+        android:text="📥"
+        android:textSize="18sp"
+        android:layout_marginEnd="10dp" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_received_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ReceivedFile.jpg"
+            android:textColor="#831843"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:singleLine="true"
+            android:ellipsize="middle" />
+
+        <TextView
+            android:id="@+id/tv_received_meta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="2.4 MB • Just now"
+            android:textColor="#9D174D"
+            android:textSize="10sp"
+            android:singleLine="true" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/btn_received_open"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Open 📂"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:background="@drawable/bg_melody_chip_selected"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="6dp"
+        android:layout_marginStart="8dp"
+        android:clickable="true"
+        android:focusable="true" />
+
+</LinearLayout>

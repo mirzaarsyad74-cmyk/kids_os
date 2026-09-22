@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_melody_sky">
+
+    <!-- 1. VIDEO GALLERY LIST VIEW -->
+    <LinearLayout
+        android:id="@+id/layout_gallery_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Top Header Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="10dp"
+            android:background="#66FFFFFF">
+
+            <TextView
+                android:id="@+id/btn_video_gallery_back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="◀ Back"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_chip_selected"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🌸 Video Player 🎬"
+                android:textColor="#831843"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/btn_video_rescan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔄 Refresh"
+                android:textColor="#831843"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_pill"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- Search Bar & Count Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp">
+
+            <EditText
+                android:id="@+id/et_search_videos"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_melody_pill"
+                android:hint="🔍 Search videos on tablet..."
+                android:textColor="#831843"
+                android:textColorHint="#9D174D"
+                android:textSize="12sp"
+                android:paddingHorizontal="14dp"
+                android:singleLine="true" />
+
+            <TextView
+                android:id="@+id/tv_video_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 Videos"
+                android:textColor="#9D174D"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_card"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:layout_marginStart="10dp" />
+        </LinearLayout>
+
+        <!-- Empty Videos State -->
+        <LinearLayout
+            android:id="@+id/layout_empty_videos"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="20dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🎬🍿"
+                android:textSize="44sp"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No Videos Found on Tablet"
+                android:textColor="#831843"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Put your favorite MP4 or MKV videos in the 'Movies' or 'Download' folder to watch them here! 🌸✨"
+                android:textColor="#9D174D"
+                android:textSize="12sp"
+                android:gravity="center"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:id="@+id/btn_empty_video_rescan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔄 Refresh Storage"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_chip_selected"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- Videos Grid -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_videos_grid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:scrollbars="vertical" />
+    </LinearLayout>
+
+    <!-- 2. FULLSCREEN IN-APP VIDEO PLAYER OVERLAY (MX PLAYER STYLE) -->
+    <FrameLayout
+        android:id="@+id/layout_player_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:visibility="gone">
+
+        <!-- Surface Video View -->
+        <VideoView
+            android:id="@+id/vv_player"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+
+        <!-- ON-SCREEN GESTURE HUD INDICATORS (CENTERED) -->
+        <!-- Volume HUD -->
+        <LinearLayout
+            android:id="@+id/layout_hud_volume"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/bg_volume_hud"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="14dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_hud_volume_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔊"
+                android:textSize="32sp" />
+
+            <ProgressBar
+                android:id="@+id/pb_hud_volume"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="140dp"
+                android:layout_height="8dp"
+                android:max="100"
+                android:progress="60"
+                android:progressDrawable="@drawable/bg_progress_melody"
+                android:layout_marginVertical="8dp" />
+
+            <TextView
+                android:id="@+id/tv_hud_volume_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Volume: 10 / 15"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Brightness HUD -->
+        <LinearLayout
+            android:id="@+id/layout_hud_brightness"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/bg_volume_hud"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="14dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_hud_brightness_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="☀️"
+                android:textSize="32sp" />
+
+            <ProgressBar
+                android:id="@+id/pb_hud_brightness"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="140dp"
+                android:layout_height="8dp"
+                android:max="100"
+                android:progress="80"
+                android:progressDrawable="@drawable/bg_progress_melody"
+                android:layout_marginVertical="8dp" />
+
+            <TextView
+                android:id="@+id/tv_hud_brightness_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Brightness: 80%"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Seek HUD -->
+        <LinearLayout
+            android:id="@+id/layout_hud_seek"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/bg_volume_hud"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="14dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_hud_seek_diff"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⏩ +00:15"
+                android:textColor="#FF4D8D"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_hud_seek_target"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="01:25 / 04:10"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <!-- Double Tap Left Feedback -->
+        <TextView
+            android:id="@+id/tv_hud_double_tap_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|start"
+            android:layout_marginStart="40dp"
+            android:background="@drawable/bg_volume_hud"
+            android:text="⏪ 10s"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <!-- Double Tap Right Feedback -->
+        <TextView
+            android:id="@+id/tv_hud_double_tap_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginEnd="40dp"
+            android:background="@drawable/bg_volume_hud"
+            android:text="⏩ 10s"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <!-- Floating Screen Unlock Pill (Visible ONLY when screen is locked) -->
+        <TextView
+            android:id="@+id/btn_player_unlock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
+            android:layout_margin="16dp"
+            android:background="@drawable/bg_lock_pill"
+            android:text="🔒 Screen Locked (Tap to Unlock)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone" />
+
+        <!-- Overlay HUD Controls (Toggled on click, hidden when locked) -->
+        <RelativeLayout
+            android:id="@+id/layout_player_controls"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#55000000">
+
+            <!-- Top Header in Player -->
+            <LinearLayout
+                android:id="@+id/layout_player_top_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:background="#99000000"
+                android:layout_alignParentTop="true">
+
+                <TextView
+                    android:id="@+id/btn_close_player"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="✕ Close"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_chip_selected"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/tv_player_video_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Video Title"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:singleLine="true"
+                    android:ellipsize="middle"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="8dp" />
+
+                <!-- Clock & Battery like MX Player -->
+                <TextView
+                    android:id="@+id/tv_player_clock_battery"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="14:30 | 🔋"
+                    android:textColor="#E5E7EB"
+                    android:textSize="11sp"
+                    android:layout_marginEnd="8dp" />
+
+                <!-- Aspect Ratio Switcher -->
+                <TextView
+                    android:id="@+id/btn_player_aspect"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📐 Fit"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_pill"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:layout_marginEnd="6dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- Playback Speed Switcher -->
+                <TextView
+                    android:id="@+id/btn_player_speed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚡ 1.0x"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_pill"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:layout_marginEnd="6dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- Screen Lock Toggle -->
+                <TextView
+                    android:id="@+id/btn_player_lock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔓 Lock"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_melody_chip_selected"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <!-- Bottom Progress & Time Scrubbing & Control Buttons -->
+            <LinearLayout
+                android:id="@+id/layout_player_bottom_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="#99000000"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="10dp"
+                android:layout_alignParentBottom="true">
+
+                <!-- Progress Scrubber Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="4dp">
+
+                    <TextView
+                        android:id="@+id/tv_player_current_time"
+                        android:layout_width="50dp"
+                        android:layout_height="wrap_content"
+                        android:text="00:00"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:gravity="end" />
+
+                    <SeekBar
+                        android:id="@+id/sb_player_progress"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:max="1000"
+                        android:progress="0"
+                        android:progressDrawable="@drawable/seekbar_progress_melody"
+                        android:thumb="@drawable/thumb_melody_music"
+                        android:splitTrack="false"
+                        android:paddingHorizontal="10dp" />
+
+                    <TextView
+                        android:id="@+id/tv_player_total_time"
+                        android:layout_width="50dp"
+                        android:layout_height="wrap_content"
+                        android:text="00:00"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:gravity="start" />
+                </LinearLayout>
+
+                <!-- Full Control Buttons Row (MX Player standard) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <!-- Audio Mute Button -->
+                    <TextView
+                        android:id="@+id/btn_player_mute"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:gravity="center"
+                        android:text="🔊"
+                        android:textSize="18sp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <!-- Loop Mode Button -->
+                    <TextView
+                        android:id="@+id/btn_player_loop"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:gravity="center"
+                        android:text="🔁"
+                        android:textSize="18sp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_marginStart="4dp" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <!-- Previous Video Button -->
+                    <TextView
+                        android:id="@+id/btn_video_prev"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:gravity="center"
+                        android:text="⏮"
+                        android:textColor="#FFFFFF"
+                        android:textSize="22sp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_marginEnd="12dp" />
+
+                    <!-- Rewind 10s -->
+                    <TextView
+                        android:id="@+id/btn_video_rewind"
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:gravity="center"
+                        android:background="@drawable/bg_avatar_circle"
+                        android:text="⏪"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_marginEnd="16dp" />
+
+                    <!-- Play / Pause Center -->
+                    <TextView
+                        android:id="@+id/btn_video_play_pause"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:gravity="center"
+                        android:background="@drawable/bg_melody_chip_selected"
+                        android:text="⏸"
+                        android:textColor="#FFFFFF"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <!-- Forward 10s -->
+                    <TextView
+                        android:id="@+id/btn_video_forward"
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:gravity="center"
+                        android:background="@drawable/bg_avatar_circle"
+                        android:text="⏩"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_marginStart="16dp" />
+
+                    <!-- Next Video Button -->
+                    <TextView
+                        android:id="@+id/btn_video_next"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:gravity="center"
+                        android:text="⏭"
+                        android:textColor="#FFFFFF"
+                        android:textSize="22sp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_marginStart="12dp" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <!-- Orientation Lock / Rotate -->
+                    <TextView
+                        android:id="@+id/btn_player_rotate"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:gravity="center"
+                        android:text="🔄"
+                        android:textSize="18sp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+        </RelativeLayout>
+    </FrameLayout>
+
+</FrameLayout>

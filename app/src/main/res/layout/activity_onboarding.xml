@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFF0F5"
+    android:gravity="center"
+    android:padding="24dp">
+
+    <!-- Top Card Container -->
+    <LinearLayout
+        android:id="@+id/card_wizard"
+        android:layout_width="540dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_melody_card"
+        android:padding="24dp"
+        android:elevation="8dp"
+        android:gravity="center_horizontal">
+
+        <!-- Step Indicator -->
+        <TextView
+            android:id="@+id/tv_step_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🌸 Step 1 of 5 ✨"
+            android:textColor="#FF4D8D"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Wizard Title -->
+        <TextView
+            android:id="@+id/tv_step_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Welcome to Melody OS! 🌸"
+            android:textColor="#831843"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tv_step_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="What's your name, little princess?"
+            android:textColor="#9D174D"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginBottom="18dp" />
+
+        <!-- Step 1: Name Input -->
+        <LinearLayout
+            android:id="@+id/layout_step_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <EditText
+                android:id="@+id/et_child_name"
+                android:layout_width="320dp"
+                android:layout_height="48dp"
+                android:hint="Your Name (e.g. Lily)"
+                android:textColor="#831843"
+                android:textColorHint="#F472B6"
+                android:background="@drawable/bg_melody_pill"
+                android:paddingHorizontal="20dp"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:inputType="textPersonName"
+                android:maxLines="1" />
+        </LinearLayout>
+
+        <!-- Step 2: Avatar Selection -->
+        <LinearLayout
+            android:id="@+id/layout_step_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/btn_avatar_bunny"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:text="🐰"
+                android:textSize="32sp"
+                android:gravity="center"
+                android:background="@drawable/bg_melody_avatar"
+                android:layout_margin="4dp" />
+
+            <TextView
+                android:id="@+id/btn_avatar_kitty"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:text="🐱"
+                android:textSize="32sp"
+                android:gravity="center"
+                android:background="@drawable/bg_melody_avatar"
+                android:layout_margin="4dp" />
+
+            <TextView
+                android:id="@+id/btn_avatar_bear"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:text="🐻"
+                android:textSize="32sp"
+                android:gravity="center"
+                android:background="@drawable/bg_melody_avatar"
+                android:layout_margin="4dp" />
+
+            <TextView
+                android:id="@+id/btn_avatar_unicorn"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:text="🦄"
+                android:textSize="32sp"
+                android:gravity="center"
+                android:background="@drawable/bg_melody_avatar"
+                android:layout_margin="4dp" />
+
+            <TextView
+                android:id="@+id/btn_avatar_melody"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:text="🌸"
+                android:textSize="32sp"
+                android:gravity="center"
+                android:background="@drawable/bg_melody_avatar"
+                android:layout_margin="4dp" />
+
+            <TextView
+                android:id="@+id/btn_avatar_puppy"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:text="🐶"
+                android:textSize="32sp"
+                android:gravity="center"
+                android:background="@drawable/bg_melody_avatar"
+                android:layout_margin="4dp" />
+        </LinearLayout>
+
+        <!-- Step 3: Theme Color -->
+        <LinearLayout
+            android:id="@+id/layout_step_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/btn_theme_pink"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="🌸 Sweet Pink"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#FF4D8D"
+                android:layout_margin="4dp"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btn_theme_lavender"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="💜 Lavender"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#9D4EDD"
+                android:layout_margin="4dp"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btn_theme_mint"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="🍃 Mint"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#10B981"
+                android:layout_margin="4dp"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btn_theme_peach"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="🍑 Peach"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#F97316"
+                android:layout_margin="4dp"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Step 4: Parent PIN & Time Limit -->
+        <LinearLayout
+            android:id="@+id/layout_step_4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Set 4-digit Parent PIN:"
+                android:textColor="#831843"
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/et_onboarding_pin"
+                android:layout_width="160dp"
+                android:layout_height="42dp"
+                android:text="1234"
+                android:inputType="numberPassword"
+                android:maxLength="4"
+                android:gravity="center"
+                android:textColor="#831843"
+                android:background="@drawable/bg_melody_pill"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Daily Playtime Limit:"
+                android:textColor="#831843"
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp" />
+
+            <RadioGroup
+                android:id="@+id/rg_onboarding_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rb_onboarding_unlimited"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Unlimited"
+                    android:checked="true"
+                    android:textColor="#831843" />
+
+                <RadioButton
+                    android:id="@+id/rb_onboarding_30m"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="30 Mins"
+                    android:layout_marginStart="10dp"
+                    android:textColor="#831843" />
+
+                <RadioButton
+                    android:id="@+id/rb_onboarding_60m"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="60 Mins"
+                    android:layout_marginStart="10dp"
+                    android:textColor="#831843" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <!-- Step 5: Ready! -->
+        <LinearLayout
+            android:id="@+id/layout_step_5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="✨🎉💖"
+                android:textSize="40sp"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/tv_summary_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="You are all ready to have fun!"
+                android:textColor="#831843"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:gravity="center" />
+        </LinearLayout>
+
+        <!-- Navigation Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="24dp">
+
+            <Button
+                android:id="@+id/btn_prev"
+                android:layout_width="120dp"
+                android:layout_height="44dp"
+                android:text="← Back"
+                android:textColor="#831843"
+                android:backgroundTint="#FFE4E6"
+                android:layout_marginEnd="12dp"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btn_next"
+                android:layout_width="160dp"
+                android:layout_height="44dp"
+                android:text="Next ➔"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#FF4D8D"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFF0F5">
+
+    <!-- Top Browser Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="10dp"
+        android:background="#FFE4E6">
+
+        <TextView
+            android:id="@+id/btn_browser_back"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:text="◀"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textColor="#831843"
+            android:background="@drawable/bg_melody_pill"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/btn_browser_forward"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:text="▶"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textColor="#831843"
+            android:background="@drawable/bg_melody_pill"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/btn_browser_refresh"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:text="🔄"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:textColor="#831843"
+            android:background="@drawable/bg_melody_pill"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Address Bar Display -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_melody_pill"
+            android:paddingHorizontal="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🛡️"
+                android:textSize="14sp"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/tv_browser_url"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="https://kids.nationalgeographic.com"
+                android:textColor="#831843"
+                android:textSize="12sp"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/btn_browser_home"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:text="🏠 Close"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF4D8D"
+            android:background="@drawable/bg_melody_chip_selected"
+            android:paddingHorizontal="14dp"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- Quick Safe Bookmarks Bar -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:scrollbars="none"
+        android:background="#FFF1F2"
+        android:paddingHorizontal="8dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/bm_pbs_kids"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:text="📺 PBS Kids"
+                android:textColor="#831843"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_pill"
+                android:gravity="center"
+                android:paddingHorizontal="10dp"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/bm_natgeo"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:text="🦁 Nat Geo Kids"
+                android:textColor="#831843"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_pill"
+                android:gravity="center"
+                android:paddingHorizontal="10dp"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/bm_kiddle"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:text="🔍 Kiddle Safe Search"
+                android:textColor="#831843"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_pill"
+                android:gravity="center"
+                android:paddingHorizontal="10dp"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/bm_scratch"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:text="🐱 Scratch Coding"
+                android:textColor="#831843"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_pill"
+                android:gravity="center"
+                android:paddingHorizontal="10dp"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/bm_wiki"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:text="📚 Simple Wikipedia"
+                android:textColor="#831843"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_melody_pill"
+                android:gravity="center"
+                android:paddingHorizontal="10dp" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Content Area: WebView & Blocked Container -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <WebView
+            android:id="@+id/webview_safe"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ProgressBar
+            android:id="@+id/pb_browser_loading"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_gravity="top"
+            android:progressTint="#FF4D8D"
+            android:visibility="gone" />
+
+        <!-- Blocked Screen -->
+        <LinearLayout
+            android:id="@+id/layout_url_blocked"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#FFF5F7"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🛡️🔒🌸"
+                android:textSize="48sp"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Safe Web Protection Active"
+                android:textColor="#831843"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/tv_blocked_reason"
+                android:layout_width="480dp"
+                android:layout_height="wrap_content"
+                android:text="This website is not on your parent-approved whitelist! Ask Mama or Papa to add it in Parent Zone."
+                android:textColor="#9D174D"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:layout_marginBottom="20dp" />
+
+            <Button
+                android:id="@+id/btn_back_to_safe"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:text="Take Me to Safe Websites 🌸"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#FF4D8D"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </FrameLayout>
+
+</LinearLayout>

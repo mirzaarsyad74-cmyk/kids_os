@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_app_container"
+    android:layout_width="160dp"
+    android:layout_height="185dp"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:clickable="true"
+    android:focusable="true"
+    android:padding="6dp">
+
+    <!-- Squircle Card Tile (iWawa Style) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_app_tile"
+        android:layout_width="116dp"
+        android:layout_height="116dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="5dp"
+        app:cardBackgroundColor="#FFFFFF">
+
+        <FrameLayout
+            android:id="@+id/layout_squircle_bg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_iwawa_squircle"
+            android:gravity="center">
+
+            <!-- Big High-Res App Icon -->
+            <ImageView
+                android:id="@+id/iv_app_icon"
+                android:layout_width="76dp"
+                android:layout_height="76dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                android:contentDescription="App Icon" />
+
+        </FrameLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- App Title below card (Clean iWawa Typography) -->
+    <TextView
+        android:id="@+id/tv_app_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="App Name"
+        android:textColor="#374151"
+        android:shadowColor="#80FFFFFF"
+        android:shadowDx="0"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+</LinearLayout>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Peach/Pink Gradient Background -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <gradient
+                android:startColor="#FB7185"
+                android:endColor="#F43F5E"
+                android:angle="135" />
+            <stroke android:width="2dp" android:color="#FFFFFF" />
+        </shape>
+    </item>
+    <!-- White Clock Face -->
+    <item android:top="14dp" android:bottom="14dp" android:left="14dp" android:right="14dp">
+        <shape android:shape="oval">
+            <solid android:color="#FFFFFF" />
+            <stroke android:width="2dp" android:color="#FECDD3" />
+        </shape>
+    </item>
+    <!-- Clock Center Pivot -->
+    <item android:top="33dp" android:bottom="33dp" android:left="33dp" android:right="33dp">
+        <shape android:shape="oval">
+            <solid android:color="#E11D48" />
+        </shape>
+    </item>
+    <!-- Minute Hand (Vertical) -->
+    <item android:top="22dp" android:bottom="34dp" android:left="34dp" android:right="34dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="2dp" />
+            <solid android:color="#BE123C" />
+        </shape>
+    </item>
+    <!-- Hour Hand (Horizontal) -->
+    <item android:top="34dp" android:bottom="34dp" android:left="34dp" android:right="24dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="2dp" />
+            <solid android:color="#BE123C" />
+        </shape>
+    </item>
+</layer-list>

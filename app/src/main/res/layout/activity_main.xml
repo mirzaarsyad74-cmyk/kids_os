@@ -1,0 +1,770 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- My Melody Wallpaper Background -->
+    <ImageView
+        android:id="@+id/iv_melody_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/bg_melody"
+        android:scaleType="centerCrop"
+        android:contentDescription="Melody Background" />
+
+    <!-- Dreamy Pastel Soft Veil for Maximum UI Clarity -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#2EFFF5F8" />
+
+    <!-- Clean iWawa Launcher Content -->
+    <LinearLayout
+        android:id="@+id/layout_launcher_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <!-- Top System & Profile Bar (iWawa Style) -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp">
+
+            <!-- Kid Profile: Avatar Circle + "Irdina" Pill Capsule (Left) -->
+            <LinearLayout
+                android:id="@+id/layout_kid_profile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- Avatar Badge -->
+                <TextView
+                    android:id="@+id/tv_avatar_badge"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:text="👧"
+                    android:textSize="28sp"
+                    android:gravity="center"
+                    android:background="@drawable/bg_melody_avatar"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- Child Name Pill ("Irdina") -->
+                <TextView
+                    android:id="@+id/tv_child_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="Irdina"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@drawable/bg_iwawa_name_pill"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="16dp"
+                    android:layout_marginStart="-10dp" />
+
+            </LinearLayout>
+
+            <!-- Status Info: WiFi, Battery, Clock & Date (Right) -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- Wi-Fi Icon -->
+                <ImageView
+                    android:id="@+id/iv_wifi_status"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_iwawa_wifi"
+                    android:layout_marginEnd="10dp"
+                    android:contentDescription="WiFi" />
+
+                <!-- Fully Animated Melody Battery Capsule -->
+                <LinearLayout
+                    android:id="@+id/layout_battery_capsule"
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/bg_melody_pill"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="10dp"
+                    android:layout_marginEnd="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <com.kids.launcher.BatteryGaugeView
+                        android:id="@+id/gauge_battery"
+                        android:layout_width="34dp"
+                        android:layout_height="18dp"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:id="@+id/tv_battery_percent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100%"
+                        android:textColor="#831843"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_charging_sparkle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⚡"
+                        android:textSize="12sp"
+                        android:layout_marginStart="3dp"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+                <!-- Clock & Date Column -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="end">
+
+                    <TextView
+                        android:id="@+id/tv_clock"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="12:07 AM"
+                        android:textColor="#374151"
+                        android:shadowColor="#FFFFFF"
+                        android:shadowDx="0"
+                        android:shadowDy="1"
+                        android:shadowRadius="2"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Wed, Sep 23"
+                        android:textColor="#6B7280"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <!-- Horizontal Paged App Grid (2 Rows x 5 Columns, iWawa Style) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_kids_apps"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="2dp" />
+
+        <!-- Bottom Navigation Controls & Pagination (iWawa Style) -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp">
+
+            <!-- Circular Back / Exit Action Button (Bottom Left) -->
+            <ImageButton
+                android:id="@+id/btn_iwawa_back"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/bg_iwawa_circle_btn"
+                android:src="@drawable/ic_iwawa_back"
+                android:scaleType="centerInside"
+                android:padding="8dp"
+                android:elevation="4dp"
+                android:contentDescription="Exit Kids Space" />
+
+            <!-- Page Indicator Dots (Bottom Center) -->
+            <LinearLayout
+                android:id="@+id/layout_page_dots"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="6dp" />
+
+            <!-- Circular 4-Square Grid Parent Menu Button (Bottom Right) -->
+            <ImageButton
+                android:id="@+id/btn_iwawa_menu"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/bg_iwawa_circle_btn"
+                android:src="@drawable/ic_iwawa_grid"
+                android:scaleType="centerInside"
+                android:padding="8dp"
+                android:elevation="4dp"
+                android:contentDescription="Parent Menu" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <!-- Invisible compatibility stub container to preserve background services and receivers -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone">
+
+        <Button android:id="@+id/btn_parent_zone" android:layout_width="0dp" android:layout_height="0dp" />
+        <TextView android:id="@+id/tv_greeting" android:layout_width="0dp" android:layout_height="0dp" />
+        <TextView android:id="@+id/btn_wallpaper_picker" android:layout_width="0dp" android:layout_height="0dp" />
+        <TextView android:id="@+id/btn_sos_call" android:layout_width="0dp" android:layout_height="0dp" />
+        <TextView android:id="@+id/tv_timer_badge" android:layout_width="0dp" android:layout_height="0dp" />
+        <TextView android:id="@+id/btn_volume_quick" android:layout_width="0dp" android:layout_height="0dp" />
+        <FrameLayout android:id="@+id/btn_notification_bell" android:layout_width="0dp" android:layout_height="0dp" />
+        <View android:id="@+id/view_notification_dot" android:layout_width="0dp" android:layout_height="0dp" />
+        <TextView android:id="@+id/chip_all" android:layout_width="0dp" android:layout_height="0dp" />
+        <TextView android:id="@+id/chip_games" android:layout_width="0dp" android:layout_height="0dp" />
+        <TextView android:id="@+id/chip_creative" android:layout_width="0dp" android:layout_height="0dp" />
+        <TextView android:id="@+id/chip_media" android:layout_width="0dp" android:layout_height="0dp" />
+        <TextView android:id="@+id/chip_learning" android:layout_width="0dp" android:layout_height="0dp" />
+        <LinearLayout android:id="@+id/btn_boost_ram" android:layout_width="0dp" android:layout_height="0dp" />
+        <TextView android:id="@+id/tv_boost_icon" android:layout_width="0dp" android:layout_height="0dp" />
+        <TextView android:id="@+id/tv_boost_text" android:layout_width="0dp" android:layout_height="0dp" />
+
+    </LinearLayout>
+
+    <!-- Animated Floating Volume HUD Pill (Centered at Top) -->
+    <LinearLayout
+        android:id="@+id/layout_volume_hud"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_volume_hud"
+        android:elevation="16dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tv_hud_speaker_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔊"
+            android:textSize="22sp"
+            android:layout_marginEnd="12dp" />
+
+        <ProgressBar
+            android:id="@+id/pb_volume_hud"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="10dp"
+            android:layout_weight="1"
+            android:progressTint="#FF4D8D"
+            android:progressBackgroundTint="#4C2A78"
+            android:max="100"
+            android:progress="70" />
+
+        <TextView
+            android:id="@+id/tv_hud_percentage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="70%"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginStart="12dp" />
+
+    </LinearLayout>
+
+    <!-- Kids OS Control Center & Notification Drawer Modal -->
+    <FrameLayout
+        android:id="@+id/layout_control_center_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#4D000000"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="360dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="56dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="vertical"
+            android:background="@drawable/bg_control_center"
+            android:padding="16dp"
+            android:elevation="20dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <!-- Title & Close -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Kids Control Center 🎛️"
+                    android:textColor="#831843"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btn_close_control_center"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:text="✕"
+                    android:textColor="#FF4D8D"
+                    android:textSize="18sp"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
+
+            <!-- Auto-Brightness Switch & Camera Ambient Sensor Indicator -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+
+                <TextView
+                    android:id="@+id/btn_auto_brightness_toggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_melody_chip_selected"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="✨ Auto: ON"
+                    android:textColor="#FFFFFF"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/tv_surrounding_light_status"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Camera Light: Detecting..."
+                    android:textColor="#9D174D"
+                    android:textSize="10.5sp"
+                    android:singleLine="true" />
+            </LinearLayout>
+
+            <!-- Brightness Slider -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="☀️ Brightness:"
+                    android:textColor="#9D174D"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <SeekBar
+                    android:id="@+id/sb_brightness"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="100"
+                    android:progress="80"
+                    android:progressTint="#FF4D8D"
+                    android:thumbTint="#FF2A85" />
+
+            </LinearLayout>
+
+            <!-- Media Volume Slider -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔊 Sound:"
+                    android:textColor="#9D174D"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <SeekBar
+                    android:id="@+id/sb_volume"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="100"
+                    android:progress="70"
+                    android:progressTint="#FF4D8D"
+                    android:thumbTint="#FF2A85" />
+
+            </LinearLayout>
+
+            <!-- Memory & Speed Turbo Booster -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="10dp">
+
+                <TextView
+                    android:id="@+id/btn_control_center_boost"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🚀 Turbo Boost RAM (Speed Up)"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11.5sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@drawable/bg_melody_chip_selected"
+                    android:paddingVertical="7dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/tv_boost_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Optimized ✨"
+                    android:textColor="#9D174D"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#FFB3C6"
+                android:layout_marginBottom="10dp" />
+
+            <!-- Notifications Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔔 Notifications &amp; Alerts"
+                android:textColor="#831843"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Notification Item 1: Battery -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFE4EC"
+                android:padding="8dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚡"
+                    android:textSize="18sp"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/tv_notif_battery_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Battery is healthy! Ready for fun."
+                    android:textColor="#831843"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+            <!-- Notification Item 2: Playtime -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFE4EC"
+                android:padding="8dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⏱️"
+                    android:textSize="18sp"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/tv_notif_time_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Daily screen time: Unlimited today!"
+                    android:textColor="#831843"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+            <!-- Notification Item 3: Hydration tip -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFE4EC"
+                android:padding="8dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💧"
+                    android:textSize="18sp"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Stay hydrated! Drink water between games."
+                    android:textColor="#831843"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- Bedtime / Playtime Lock Screen Overlay in Sweet Melody Pink Style -->
+    <LinearLayout
+        android:id="@+id/layout_time_up_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F7FFF0F5"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="32dp">
+
+        <TextView
+            android:id="@+id/tv_lock_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🐰💤"
+            android:textSize="72sp" />
+
+        <TextView
+            android:id="@+id/tv_lock_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Playtime is Finished!"
+            android:textColor="#FF2A85"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:layout_marginTop="14dp" />
+
+        <TextView
+            android:id="@+id/tv_lock_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sweet dreams, little princess! Time to rest your eyes or play in the garden. 🌸✨"
+            android:textColor="#831843"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:maxWidth="520dp" />
+
+        <Button
+            android:id="@+id/btn_unlock_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Parent Unlock (Enter PIN)"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:backgroundTint="#FF4D8D"
+            app:cornerRadius="20dp"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="12dp"
+            android:layout_marginTop="20dp" />
+
+    </LinearLayout>
+
+    <!-- Eye-Protection Break Timer Overlay -->
+    <LinearLayout
+        android:id="@+id/layout_eye_break_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F2E0F2FE"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="32dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="👀🧘‍♀️"
+            android:textSize="72sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Time to Rest Your Eyes!"
+            android:textColor="#0284C7"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:layout_marginTop="14dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Great job playing! Look away from the screen, stretch your hands, or drink some water. 💧🌱"
+            android:textColor="#0369A1"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:maxWidth="520dp" />
+
+        <Button
+            android:id="@+id/btn_finish_break"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="I'm Ready to Play Again! ✨"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:backgroundTint="#0EA5E9"
+            app:cornerRadius="20dp"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="12dp"
+            android:layout_marginTop="20dp" />
+
+    </LinearLayout>
+
+    <!-- Recent Windows / Multitasking Task Switcher Overlay -->
+    <FrameLayout
+        android:id="@+id/layout_recents_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="600dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:background="@drawable/bg_melody_card"
+            android:padding="20dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <!-- Header of Recents Modal -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🌸 Open Kids Windows"
+                    android:textColor="#831843"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true" />
+
+                <TextView
+                    android:id="@+id/btn_close_recents"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="✕"
+                    android:textColor="#FF4D8D"
+                    android:textSize="20sp"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </RelativeLayout>
+
+            <!-- Recents Horizontal Cards Scroll -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:layout_marginBottom="14dp">
+
+                <LinearLayout
+                    android:id="@+id/layout_recent_apps_container"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingVertical="4dp">
+                    <!-- Dynamic recent app preview cards added here -->
+                </LinearLayout>
+
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/tv_no_recents"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:gravity="center"
+                android:text="✨ No open windows in background"
+                android:textColor="#9D174D"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <!-- Clear All Apps Button -->
+            <Button
+                android:id="@+id/btn_clear_all_recents"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:text="🧹 Clear All Windows"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:backgroundTint="#FF4D8D"
+                app:cornerRadius="22dp" />
+
+        </LinearLayout>
+    </FrameLayout>
+
+</FrameLayout>

@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Kids Space</string>
+    <string name="parent_zone">Parent Zone</string>
+    <string name="enter_pin">Enter Parent PIN</string>
+    <string name="default_pin">1234</string>
+    <string name="time_up">Playtime is Over!</string>
+    <string name="take_a_break">Great job! Time to rest your eyes for a bit. 🌟</string>
+</resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_touch_orb_root"
+    android:layout_width="52dp"
+    android:layout_height="52dp"
+    android:background="@drawable/bg_melody_touch_orb"
+    android:elevation="35dp"
+    android:clickable="true"
+    android:focusable="false">
+
+    <!-- Inner Concentric Soft Ring (Apple AssistiveTouch Style with Melody Touch) -->
+    <View
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_melody_touch_inner" />
+
+    <TextView
+        android:id="@+id/tv_touch_orb_emoji"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="🌸"
+        android:textSize="18sp"
+        android:clickable="false"
+        android:focusable="false" />
+
+</FrameLayout>

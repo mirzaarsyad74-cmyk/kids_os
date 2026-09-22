@@ -1,0 +1,27 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="72dp"
+    android:height="72dp"
+    android:viewportWidth="72"
+    android:viewportHeight="72">
+    <!-- Cute Pastel Rounded Card Background -->
+    <path
+        android:fillColor="#FFF0F5"
+        android:pathData="M16,6h40a10,10 0 0 1 10,10v40a10,10 0 0 1 -10,10h-40a10,10 0 0 1 -10,-10v-40a10,10 0 0 1 10,-10z" />
+    <!-- Outer Battery Outline -->
+    <path
+        android:strokeColor="#FF4D8D"
+        android:strokeWidth="3.5"
+        android:pathData="M20,24h28a5,5 0 0 1 5,5v18a5,5 0 0 1 -5,5h-28a5,5 0 0 1 -5,-5v-18a5,5 0 0 1 5,-5z" />
+    <!-- Positive Terminal Tip -->
+    <path
+        android:fillColor="#FF4D8D"
+        android:pathData="M54,32h3a2,2 0 0 1 2,2v8a2,2 0 0 1 -2,2h-3z" />
+    <!-- Inner Green/Cyan Charge Fill -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M23,28h20a3,3 0 0 1 3,3v14a3,3 0 0 1 -3,3h-20a3,3 0 0 1 -3,-3v-14a3,3 0 0 1 3,-3z" />
+    <!-- Radiant Lightning Bolt -->
+    <path
+        android:fillColor="#FFE600"
+        android:pathData="M35,26l-5,11h4l-2,9l7,-12h-4z" />
+</vector>

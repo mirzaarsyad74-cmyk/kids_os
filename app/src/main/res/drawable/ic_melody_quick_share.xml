@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+
+    <!-- Soft Pink Circle -->
+    <path
+        android:fillColor="#FCE7F3"
+        android:pathData="M32,32m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0" />
+
+    <path
+        android:strokeColor="#F472B6"
+        android:strokeWidth="2"
+        android:pathData="M32,32m-29,0a29,29 0,1 1,58 0a29,29 0,1 1,-58 0" />
+
+    <!-- Center Transmitter Core -->
+    <path
+        android:fillColor="#DB2777"
+        android:pathData="M32,32m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+
+    <!-- Bluetooth / Share Waves Left & Right -->
+    <path
+        android:strokeColor="#DB2777"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M23,23 C20,26 19,29 19,32 C19,35 20,38 23,41" />
+
+    <path
+        android:strokeColor="#DB2777"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M41,23 C44,26 45,29 45,32 C45,35 44,38 41,41" />
+
+    <!-- Outer Waves -->
+    <path
+        android:strokeColor="#F472B6"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M16,16 C12,20 10,26 10,32 C10,38 12,44 16,48" />
+
+    <path
+        android:strokeColor="#F472B6"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M48,16 C52,20 54,26 54,32 C54,38 52,44 48,48" />
+
+    <!-- Cute Center Sparkle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,30 L32.8,31.2 L34,32 L32.8,32.8 L32,34 L31.2,32.8 L30,32 L31.2,31.2 Z" />
+
+</vector>

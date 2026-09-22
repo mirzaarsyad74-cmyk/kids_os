@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Pink Background Rounded Tile -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <gradient
+                android:startColor="#F472B6"
+                android:endColor="#EC4899"
+                android:angle="135" />
+            <stroke android:width="2dp" android:color="#FFFFFF" />
+        </shape>
+    </item>
+    <!-- White Inner Calculator Body -->
+    <item android:top="14dp" android:bottom="14dp" android:left="16dp" android:right="16dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="14dp" />
+            <solid android:color="#FFFFFF" />
+        </shape>
+    </item>
+    <!-- Calculator Display Screen -->
+    <item android:top="20dp" android:bottom="46dp" android:left="22dp" android:right="22dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="6dp" />
+            <solid android:color="#FCE7F3" />
+        </shape>
+    </item>
+    <!-- 4 Little Buttons Pattern -->
+    <item android:top="38dp" android:bottom="20dp" android:left="22dp" android:right="45dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="4dp" />
+            <solid android:color="#FFB3C6" />
+        </shape>
+    </item>
+    <item android:top="38dp" android:bottom="20dp" android:left="45dp" android:right="22dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="4dp" />
+            <solid android:color="#FB7185" />
+        </shape>
+    </item>
+</layer-list>

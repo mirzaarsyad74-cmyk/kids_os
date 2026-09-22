@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_global_battery_root"
+    android:layout_width="wrap_content"
+    android:layout_height="32dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/bg_melody_pill"
+    android:paddingStart="8dp"
+    android:paddingEnd="10dp"
+    android:elevation="20dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <com.kids.launcher.BatteryGaugeView
+        android:id="@+id/gauge_global_battery"
+        android:layout_width="28dp"
+        android:layout_height="14dp"
+        android:layout_marginEnd="5dp" />
+
+    <TextView
+        android:id="@+id/tv_global_battery_percent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="100%"
+        android:textColor="#831843"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tv_global_charging_sparkle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="⚡"
+        android:textSize="11sp"
+        android:layout_marginStart="3dp"
+        android:visibility="gone" />
+
+</LinearLayout>

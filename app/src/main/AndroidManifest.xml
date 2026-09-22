@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" 
+        tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
+    <uses-feature android:name="android.hardware.sensor.light" android:required="false" />
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.KidsLauncher">
+
+        <!-- Kids Home Launcher Activity -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:clearTaskOnLaunch="true"
+            android:stateNotNeeded="true"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KidsLauncher.Fullscreen">
+            
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Parent Zone / Settings Activity -->
+        <activity
+            android:name=".ParentZoneActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:label="Parent Zone"
+            android:theme="@style/Theme.KidsLauncher" />
+
+        <!-- Cute Melody Camera Activity -->
+        <activity
+            android:name=".MelodyCameraActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KidsLauncher.Fullscreen" />
+
+        <!-- Cute Melody Music Activity -->
+        <activity
+            android:name=".MelodyMusicActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KidsLauncher.Fullscreen" />
+
+        <!-- Cute Melody Calculator Activity -->
+        <activity
+            android:name=".MelodyCalculatorActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KidsLauncher.Fullscreen" />
+
+        <!-- Cute Melody Clock & Timer Activity -->
+        <activity
+            android:name=".MelodyClockActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KidsLauncher.Fullscreen" />
+
+        <!-- Cute Melody Gallery & Photos Activity -->
+        <activity
+            android:name=".MelodyGalleryActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KidsLauncher.Fullscreen" />
+
+        <!-- Cute Melody Battery Care & Management Activity -->
+        <activity
+            android:name=".MelodyBatteryActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KidsLauncher.Fullscreen" />
+
+        <!-- Cute Melody File Manager Activity -->
+        <activity
+            android:name=".MelodyFileManagerActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KidsLauncher.Fullscreen" />
+
+        <!-- Cute Melody Video Player Activity -->
+        <activity
+            android:name=".MelodyVideoActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KidsLauncher.Fullscreen" />
+
+        <!-- Cute Melody Quick Share & Bluetooth Activity -->
+        <activity
+            android:name=".MelodyQuickShareActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KidsLauncher.Fullscreen" />
+
+        <!-- Welcome Onboarding Wizard Activity -->
+        <activity
+            android:name=".OnboardingActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KidsLauncher.Fullscreen" />
+
+        <!-- Safe Browsing Whitelist Browser Activity -->
+        <activity
+            android:name=".MelodySafeBrowserActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KidsLauncher.Fullscreen" />
+
+        <!-- Cute Melody Alarm & Timer Alert Dialog Activity -->
+        <activity
+            android:name=".MelodyAlarmAlertActivity"
+            android:exported="false"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KidsLauncher.Fullscreen" />
+
+        <!-- Receiver for Alarms and Timers -->
+        <receiver
+            android:name=".MelodyAlarmReceiver"
+            android:exported="false" />
+
+        <!-- Receiver for New App Installs (Parent Approval) -->
+        <receiver
+            android:name=".AppInstallReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Melody Global System Navigation & Battery Service -->
+        <service
+            android:name=".MelodyGlobalService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+    </application>
+</manifest>

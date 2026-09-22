@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/bg_melody_card"
+    android:padding="12dp">
+
+    <!-- Header Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp">
+
+        <TextView
+            android:id="@+id/btn_battery_back"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:text="◀ Back"
+            android:textColor="#831843"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_melody_pill"
+            android:paddingHorizontal="14dp"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🌸 Battery Guru &amp; Health 🔋"
+            android:textColor="#831843"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/tv_battery_health_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Health: Good ✨"
+            android:textColor="#C2185B"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_melody_badge"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp" />
+    </LinearLayout>
+
+    <!-- Main Content (2 Columns Landscape) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <!-- Left Column: Big Battery Status & Key Metrics -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:background="@drawable/bg_melody_pill"
+            android:padding="12dp"
+            android:gravity="center_horizontal"
+            android:layout_marginEnd="8dp">
+
+            <!-- Big Battery Gauge with percentage inside -->
+            <com.kids.launcher.BatteryGaugeView
+                android:id="@+id/gauge_battery_large"
+                android:layout_width="140dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="6dp" />
+
+            <!-- Charging Status / Power Source Pill -->
+            <TextView
+                android:id="@+id/tv_charging_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_melody_badge"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                android:text="🔋 Discharging (On Battery)"
+                android:textColor="#831843"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <!-- Estimated Time Remaining -->
+            <TextView
+                android:id="@+id/tv_time_remaining"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Estimated Time: ~5 hours 30 mins remaining"
+                android:textColor="#9D174D"
+                android:textSize="12sp" />
+
+            <!-- Metrics Grid (Temp, Voltage, Tech, Saver) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="#15FF4081"
+                    android:padding="6dp"
+                    android:layout_marginEnd="4dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🌡️ Temperature"
+                        android:textColor="#831843"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tv_battery_temp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="29.0 °C (Cool)"
+                        android:textColor="#831843"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="#15FF4081"
+                    android:padding="6dp"
+                    android:layout_marginStart="4dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⚡ Voltage"
+                        android:textColor="#831843"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tv_battery_voltage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="4.12 V"
+                        android:textColor="#831843"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- 1-Tap Battery Optimizer Button -->
+            <Button
+                android:id="@+id/btn_optimize_battery"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_melody_pill"
+                android:text="⚡ Optimize Battery &amp; Boost 🚀"
+                android:textColor="#831843"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Right Column: Settings & App Battery Consumption List -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.2"
+            android:orientation="vertical"
+            android:background="@drawable/bg_melody_pill"
+            android:padding="12dp"
+            android:layout_marginStart="8dp">
+
+            <!-- Toggles Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="#10FF4081"
+                android:padding="8dp"
+                android:layout_marginBottom="8dp">
+
+                <!-- Toggle: Auto Battery Saver (< 20%) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="🪫 Auto Battery Saver (&lt; 20%)"
+                        android:textColor="#831843"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switch_app_battery_saver"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <!-- Toggle: Full Battery Sound Notice (100%) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="4dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="🔔 Full Charge Sound Alert (100%)"
+                        android:textColor="#831843"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switch_app_full_alert"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Apps Drain Section Header -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📱 Running Background Apps &amp; Drain"
+                android:textColor="#831843"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <!-- App Drain RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_app_drain"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

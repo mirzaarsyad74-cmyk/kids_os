@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#E60F0B1E"
+    android:gravity="center"
+    android:padding="24dp">
+
+    <!-- Center Card -->
+    <LinearLayout
+        android:layout_width="520dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_melody_card"
+        android:padding="28dp"
+        android:gravity="center">
+
+        <!-- Title / Mascot -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="👀🌸 Rest Your Eyes 🌸👀"
+            android:textColor="#831843"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="6dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Look at something 20 feet (6 meters) away!"
+            android:textColor="#9D174D"
+            android:textSize="14sp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Circular Countdown Frame -->
+        <FrameLayout
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_marginBottom="16dp">
+
+            <ProgressBar
+                android:id="@+id/pb_eye_break"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:indeterminate="false"
+                android:max="20"
+                android:progress="20"
+                android:progressDrawable="@drawable/bg_circular_progress" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_eye_countdown"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="20"
+                    android:textColor="#831843"
+                    android:textSize="38sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="seconds"
+                    android:textColor="#C2185B"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- Prompt Message -->
+        <TextView
+            android:id="@+id/tv_eye_prompt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Blink your eyes gently and take a deep breath ✨"
+            android:textColor="#831843"
+            android:textSize="13sp"
+            android:textStyle="italic"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Parent Override Button -->
+        <Button
+            android:id="@+id/btn_eye_override"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="🔑 Parent Override"
+            android:textColor="#831843"
+            android:textSize="11sp"
+            android:backgroundTint="#FFE4E6"
+            android:paddingHorizontal="14dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

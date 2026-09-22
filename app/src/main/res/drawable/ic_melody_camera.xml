@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sweet Pink Pastel Gradient Background -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <gradient
+                android:startColor="#FFA5D2"
+                android:endColor="#FF4D8D"
+                android:angle="135" />
+            <stroke android:width="2dp" android:color="#FFFFFF" />
+        </shape>
+    </item>
+    <!-- Cute Inner Camera Body -->
+    <item android:top="16dp" android:bottom="16dp" android:left="14dp" android:right="14dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="14dp" />
+            <solid android:color="#FFFFFF" />
+        </shape>
+    </item>
+    <!-- Cute Lens Circle -->
+    <item android:top="25dp" android:bottom="25dp" android:left="25dp" android:right="25dp">
+        <shape android:shape="oval">
+            <solid android:color="#FF4D8D" />
+            <stroke android:width="3dp" android:color="#FFE4E6" />
+        </shape>
+    </item>
+</layer-list>
