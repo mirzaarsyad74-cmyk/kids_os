@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+
+    <!-- Soft Pink Circle Background -->
+    <path
+        android:fillColor="#FCE7F3"
+        android:pathData="M32,32m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0" />
+
+    <path
+        android:strokeColor="#F472B6"
+        android:strokeWidth="2"
+        android:pathData="M32,32m-29,0a29,29 0,1 1,58 0a29,29 0,1 1,-58 0" />
+
+    <!-- Upward Arrow / Rocket Body in Vibrant Rose Pink -->
+    <path
+        android:fillColor="#DB2777"
+        android:pathData="M32,16 L44,28 L36,28 L36,42 L28,42 L28,28 L20,28 Z" />
+
+    <!-- Cloud Base / Sparkle Platform -->
+    <path
+        android:fillColor="#F472B6"
+        android:pathData="M22,46 C20,46 18,48 18,50 C18,52 20,53 22,53 L42,53 C44,53 46,52 46,50 C46,48 44,46 42,46 Z" />
+
+    <!-- Cute Sparkle Star -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,23 L33,26 L36,27 L33,28 L32,31 L31,28 L28,27 L31,26 Z" />
+
+</vector>

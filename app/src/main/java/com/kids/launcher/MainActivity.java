@@ -758,6 +758,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     builtIn = new Intent(this, MelodyVideoActivity.class);
                 } else if (MelodyQuickShareActivity.class.getName().equals(app.getActivityName())) {
                     builtIn = new Intent(this, MelodyQuickShareActivity.class);
+                } else if (MelodyUpdaterActivity.class.getName().equals(app.getActivityName())) {
+                    builtIn = new Intent(this, MelodyUpdaterActivity.class);
                 }
 
                 if (builtIn != null) {
@@ -1290,6 +1292,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         );
         shareApp.setCategory(prefs.getAppCategory(getPackageName() + ".share", AppModel.CAT_LEARNING));
         allAllowedApps.add(shareApp);
+
+        // Add built-in System Updater ("System Update 🚀")
+        AppModel updaterApp = new AppModel(
+                "System Update 🚀",
+                getPackageName(),
+                MelodyUpdaterActivity.class.getName(),
+                androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_melody_updater),
+                true
+        );
+        updaterApp.setCategory(prefs.getAppCategory(getPackageName() + ".updater", AppModel.CAT_LEARNING));
+        allAllowedApps.add(updaterApp);
 
         Collections.sort(allAllowedApps, (a, b) -> a.getLabel().compareToIgnoreCase(b.getLabel()));
         filterAppsByCategory();

@@ -238,6 +238,10 @@ public class ParentZoneActivity extends AppCompatActivity {
         findViewById(R.id.tile_battery).setOnClickListener(v -> launchSystemSetting(Intent.ACTION_POWER_USAGE_SUMMARY));
         findViewById(R.id.tile_master_settings).setOnClickListener(v -> launchSystemSetting(Settings.ACTION_SETTINGS));
         findViewById(R.id.tile_home_apps).setOnClickListener(v -> launchSystemSetting(Settings.ACTION_HOME_SETTINGS));
+        View tileUpdater = findViewById(R.id.tile_system_update);
+        if (tileUpdater != null) {
+            tileUpdater.setOnClickListener(v -> startActivity(new Intent(this, MelodyUpdaterActivity.class)));
+        }
     }
 
     private void launchSystemSetting(String action) {
