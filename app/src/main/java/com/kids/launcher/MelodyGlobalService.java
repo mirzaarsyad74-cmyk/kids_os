@@ -28,6 +28,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -82,12 +83,29 @@ public class MelodyGlobalService extends AccessibilityService {
 
     private String lastBoostedPackage = "";
 
+    // Automatic Hands-Free Package Installer Support
+    private static boolean isPendingAutoInstall = false;
+    private static long autoInstallStartTime = 0;
+
+    public static void setPendingAutoInstall(boolean pending) {
+        isPendingAutoInstall = pending;
+        autoInstallStartTime = pending ? System.currentTimeMillis() : 0;
+    }
+
+    public static boolean isPendingAutoInstall() {
+        return isPendingAutoInstall;
+    }
+
     public static MelodyGlobalService getInstance() {
         return instance;
     }
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
+        if (isPendingAutoInstall) {
+            handleAutoInstallEvent(event);
+        }
+
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             CharSequence pkg = event.getPackageName();
             CharSequence cls = event.getClassName();
@@ -120,6 +138,89 @@ public class MelodyGlobalService extends AccessibilityService {
             }
         }
         restoreStockNavBar();
+    }
+
+    private void handleAutoInstallEvent(AccessibilityEvent event) {
+        if (!isPendingAutoInstall) return;
+
+        // Auto-expire after 60 seconds
+        if (System.currentTimeMillis() - autoInstallStartTime > 60000) {
+            isPendingAutoInstall = false;
+            return;
+        }
+
+        CharSequence pkg = event.getPackageName();
+        if (pkg == null) return;
+        String pkgStr = pkg.toString();
+
+        if (pkgStr.contains("packageinstaller")) {
+            AccessibilityNodeInfo root = getRootInActiveWindow();
+            if (root == null) return;
+
+            try {
+                // 1. Check for "Install" or "Update" buttons
+                boolean clickedInstall = clickNodeByTextOrId(root,
+                        new String[]{"Install", "Update", "Pasang", "INSTALL", "UPDATE", "PASANG"},
+                        new String[]{"ok_button", "button1"});
+
+                // 2. If already finished, click "Open" or "Done"
+                if (!clickedInstall) {
+                    boolean clickedOpen = clickNodeByTextOrId(root,
+                            new String[]{"Open", "Buka", "OPEN", "BUKA", "Done", "Selesai", "DONE"},
+                            new String[]{"launch_button", "done_button", "button1"});
+                    if (clickedOpen) {
+                        isPendingAutoInstall = false;
+                    }
+                }
+            } finally {
+                root.recycle();
+            }
+        }
+    }
+
+    private boolean clickNodeByTextOrId(AccessibilityNodeInfo root, String[] targetTexts, String[] targetIdSubstrings) {
+        if (root == null) return false;
+
+        // Search by view resource ID
+        for (String idPart : targetIdSubstrings) {
+            java.util.List<AccessibilityNodeInfo> list = root.findAccessibilityNodeInfosByViewId("com.google.android.packageinstaller:id/" + idPart);
+            if (list == null || list.isEmpty()) {
+                list = root.findAccessibilityNodeInfosByViewId("com.android.packageinstaller:id/" + idPart);
+            }
+            if (list == null || list.isEmpty()) {
+                list = root.findAccessibilityNodeInfosByViewId("android:id/" + idPart);
+            }
+            if (list != null && !list.isEmpty()) {
+                for (AccessibilityNodeInfo node : list) {
+                    if (node.isEnabled() && node.isClickable()) {
+                        node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // Search by text
+        for (String text : targetTexts) {
+            java.util.List<AccessibilityNodeInfo> list = root.findAccessibilityNodeInfosByText(text);
+            if (list != null && !list.isEmpty()) {
+                for (AccessibilityNodeInfo node : list) {
+                    if (node.isEnabled()) {
+                        if (node.isClickable()) {
+                            node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                            return true;
+                        }
+                        AccessibilityNodeInfo parent = node.getParent();
+                        if (parent != null && parent.isClickable()) {
+                            parent.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override

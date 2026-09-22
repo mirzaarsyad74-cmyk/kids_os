@@ -411,14 +411,17 @@ public class MelodyUpdaterActivity extends AppCompatActivity {
     private void onDownloadSuccess(File apkFile) {
         isDownloading = false;
         btnActionDownload.setEnabled(true);
-        btnActionDownload.setText("🚀 Install Update");
+        btnActionDownload.setText("🚀 Auto-Installing Update...");
 
         pbDownloadProgress.setProgress(100);
         tvDownloadPercent.setText("100%");
-        tvDownloadStatusTitle.setText("✅ Download Complete! Opening Installer...");
-        tvDownloadMetrics.setText("File size: " + String.format(Locale.getDefault(), "%.1f MB", apkFile.length() / (1024f * 1024f)));
+        tvDownloadStatusTitle.setText("✨ Download Complete! Auto-installing update now... 🌸");
+        tvDownloadMetrics.setText("Package: " + String.format(Locale.getDefault(), "%.1f MB", apkFile.length() / (1024f * 1024f)) + " (Hands-Free Installation)");
 
-        Toast.makeText(this, "Update downloaded! Starting installation... 🌸", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Update downloaded! Auto-installing Kids OS... 🚀🌸", Toast.LENGTH_SHORT).show();
+
+        // Arm the accessibility service to auto-click Install & Open without user input
+        MelodyGlobalService.setPendingAutoInstall(true);
 
         promptInstallApk(apkFile);
     }
