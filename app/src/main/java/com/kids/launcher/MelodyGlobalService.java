@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.ContentObserver;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.hardware.Sensor;
@@ -43,7 +44,7 @@ import android.widget.Toast;
  * - Automatic background RAM boost on app launches to eliminate lag on 4GB RAM tablet.
  * - Blue Light Filter (Night Mode) warm tint overlay.
  * - Posture Reminder periodic gentle notifications.
- * - Volume Limiter (70% cap for ear protection).
+ * - Volume Limiter with ContentObserver (custom % cap enforced on all volume changes).
  */
 public class MelodyGlobalService extends AccessibilityService {
 
@@ -81,6 +82,10 @@ public class MelodyGlobalService extends AccessibilityService {
     private View topStatusBarShieldView;
     private final Handler healthHandler = new Handler(Looper.getMainLooper());
     private Runnable postureRunnable;
+
+    // Volume Limiter ContentObserver — enforces cap on ALL volume changes (hardware keys, in-app)
+    private ContentObserver volumeObserver;
+    private long lastVolumeCapToastTime = 0;
 
     private String lastBoostedPackage = "";
 
@@ -385,6 +390,7 @@ public class MelodyGlobalService extends AccessibilityService {
         setupGlobalAutoBrightness();
         updateBlueLightFilter();
         startHealthReminders();
+        setupVolumeObserver();
     }
 
     public void updateBlueLightFilter() {
@@ -441,6 +447,69 @@ public class MelodyGlobalService extends AccessibilityService {
             }
         };
         healthHandler.postDelayed(postureRunnable, 35 * 60 * 1000L);
+    }
+
+    /**
+     * Register a ContentObserver on the system volume setting.
+     * Whenever ANY volume change happens (hardware buttons, in-app sliders, system UI),
+     * we check and clamp it to the parent-configured percentage cap.
+     */
+    private void setupVolumeObserver() {
+        if (audioManager == null) return;
+        volumeObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
+            @Override
+            public void onChange(boolean selfChange) {
+                super.onChange(selfChange);
+                enforceVolumeCap();
+            }
+        };
+        try {
+            getContentResolver().registerContentObserver(
+                    Settings.System.CONTENT_URI, true, volumeObserver);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // Apply the cap immediately on startup
+        enforceVolumeCap();
+    }
+
+    /**
+     * Enforce the volume cap across all audio streams.
+     * Called from ContentObserver on every volume change, and also from ParentZoneActivity
+     * when the parent adjusts settings.
+     */
+    public void enforceVolumeCap() {
+        if (audioManager == null || prefs == null) return;
+        if (!prefs.isVolumeLimiterEnabled()) return;
+
+        int capPercent = prefs.getVolumeCapPercent();
+        int[] streams = {
+                AudioManager.STREAM_MUSIC,
+                AudioManager.STREAM_RING,
+                AudioManager.STREAM_NOTIFICATION,
+                AudioManager.STREAM_ALARM
+        };
+
+        boolean wasCapped = false;
+        for (int stream : streams) {
+            int max = audioManager.getStreamMaxVolume(stream);
+            int capValue = (int) Math.ceil(max * (capPercent / 100.0f));
+            int current = audioManager.getStreamVolume(stream);
+            if (current > capValue) {
+                audioManager.setStreamVolume(stream, capValue, 0);
+                wasCapped = true;
+            }
+        }
+
+        if (wasCapped) {
+            long now = System.currentTimeMillis();
+            if (now - lastVolumeCapToastTime > 3000) {
+                lastVolumeCapToastTime = now;
+                Toast.makeText(this,
+                        "🎧 Volume capped at " + capPercent + "%! Ask a parent to change it 💕",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void restoreStockNavBar() {
@@ -1150,6 +1219,11 @@ public class MelodyGlobalService extends AccessibilityService {
 
         if (sensorManager != null && lightSensorListener != null) {
             try { sensorManager.unregisterListener(lightSensorListener); } catch (Exception ignored) {}
+        }
+
+        if (volumeObserver != null) {
+            try { getContentResolver().unregisterContentObserver(volumeObserver); } catch (Exception ignored) {}
+            volumeObserver = null;
         }
     }
 }

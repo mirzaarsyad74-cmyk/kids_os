@@ -17,9 +17,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RadioGroup;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.RadioGroup;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -42,20 +43,6 @@ public class ParentZoneActivity extends AppCompatActivity {
     private final List<AppModel> allApps = new ArrayList<>();
     private final List<AppModel> filteredApps = new ArrayList<>();
 
-    // Tab Views
-    private LinearLayout layoutTabApps;
-    private LinearLayout layoutTabTime;
-    private LinearLayout layoutTabStats;
-    private LinearLayout layoutTabAndroid;
-    private View layoutTabSecurity;
-
-    // Tab Buttons
-    private Button tabBtnApps;
-    private Button tabBtnTime;
-    private Button tabBtnStats;
-    private Button tabBtnAndroid;
-    private Button tabBtnSecurity;
-
     // Controls
     private TextView tvAppCountBadge;
     private RadioGroup rgTimeLimits;
@@ -72,6 +59,11 @@ public class ParentZoneActivity extends AppCompatActivity {
     private SwitchCompat switchBlueLight;
     private SwitchCompat switchPostureReminder;
     private SwitchCompat switchVolumeLimiter;
+
+    // Volume Limiter Controls
+    private LinearLayout layoutVolumeSlider;
+    private SeekBar seekBarVolumeCap;
+    private TextView tvVolumeCapLabel;
 
     // Pending App Approvals
     private LinearLayout layoutPendingApprovals;
@@ -106,9 +98,9 @@ public class ParentZoneActivity extends AppCompatActivity {
         prefs = new PreferencesManager(this);
 
         initViews();
-        setupTabs();
         setupAdvancedControls();
         setupHealthControls();
+        setupVolumeControls();
         setupAndroidSettingsTiles();
         setupTimeLimits();
         setupAppList();
@@ -116,6 +108,7 @@ public class ParentZoneActivity extends AppCompatActivity {
         setupSecuritySection();
 
         loadInstalledApps();
+        refreshStats();
     }
 
     @Override
@@ -123,21 +116,12 @@ public class ParentZoneActivity extends AppCompatActivity {
         super.onResume();
         loadInstalledApps();
         updatePendingApprovalsUi();
+        refreshStats();
+        refreshLocationUi();
+        updateWhitelistDomainsUi();
     }
 
     private void initViews() {
-        layoutTabApps = findViewById(R.id.layout_tab_apps);
-        layoutTabTime = findViewById(R.id.layout_tab_time);
-        layoutTabStats = findViewById(R.id.layout_tab_stats);
-        layoutTabAndroid = findViewById(R.id.layout_tab_android);
-        layoutTabSecurity = findViewById(R.id.layout_tab_security);
-
-        tabBtnApps = findViewById(R.id.tab_btn_apps);
-        tabBtnTime = findViewById(R.id.tab_btn_time);
-        tabBtnStats = findViewById(R.id.tab_btn_stats);
-        tabBtnAndroid = findViewById(R.id.tab_btn_android);
-        tabBtnSecurity = findViewById(R.id.tab_btn_security);
-
         tvAppCountBadge = findViewById(R.id.tv_app_count_badge);
         rgTimeLimits = findViewById(R.id.rg_time_limits);
         etNewPin = findViewById(R.id.et_new_pin);
@@ -153,6 +137,11 @@ public class ParentZoneActivity extends AppCompatActivity {
         switchBlueLight = findViewById(R.id.switch_blue_light);
         switchPostureReminder = findViewById(R.id.switch_posture_reminder);
         switchVolumeLimiter = findViewById(R.id.switch_volume_limiter);
+
+        // Volume limiter slider
+        layoutVolumeSlider = findViewById(R.id.layout_volume_slider);
+        seekBarVolumeCap = findViewById(R.id.seekbar_volume_cap);
+        tvVolumeCapLabel = findViewById(R.id.tv_volume_cap_label);
 
         layoutPendingApprovals = findViewById(R.id.layout_pending_approvals);
         containerPendingApps = findViewById(R.id.container_pending_apps);
@@ -192,42 +181,6 @@ public class ParentZoneActivity extends AppCompatActivity {
 
         if (btnGrantUsageStats != null) {
             btnGrantUsageStats.setOnClickListener(v -> UsageStatsHelper.openUsageAccessSettings(this));
-        }
-    }
-
-    private void setupTabs() {
-        tabBtnApps.setOnClickListener(v -> switchTab(0));
-        tabBtnTime.setOnClickListener(v -> switchTab(1));
-        tabBtnStats.setOnClickListener(v -> switchTab(2));
-        tabBtnAndroid.setOnClickListener(v -> switchTab(3));
-        tabBtnSecurity.setOnClickListener(v -> switchTab(4));
-    }
-
-    private void switchTab(int tabIndex) {
-        layoutTabApps.setVisibility(tabIndex == 0 ? View.VISIBLE : View.GONE);
-        layoutTabTime.setVisibility(tabIndex == 1 ? View.VISIBLE : View.GONE);
-        layoutTabStats.setVisibility(tabIndex == 2 ? View.VISIBLE : View.GONE);
-        layoutTabAndroid.setVisibility(tabIndex == 3 ? View.VISIBLE : View.GONE);
-        layoutTabSecurity.setVisibility(tabIndex == 4 ? View.VISIBLE : View.GONE);
-
-        Button[] buttons = {tabBtnApps, tabBtnTime, tabBtnStats, tabBtnAndroid, tabBtnSecurity};
-        for (int i = 0; i < buttons.length; i++) {
-            if (i == tabIndex) {
-                buttons[i].setBackgroundColor(Color.parseColor("#FF4D8D"));
-                buttons[i].setTextColor(Color.WHITE);
-            } else {
-                buttons[i].setBackgroundColor(Color.parseColor("#26174D"));
-                buttons[i].setTextColor(Color.parseColor("#D1D5DB"));
-            }
-        }
-
-        if (tabIndex == 0) {
-            updatePendingApprovalsUi();
-        } else if (tabIndex == 2) {
-            refreshStats();
-        } else if (tabIndex == 4) {
-            refreshLocationUi();
-            updateWhitelistDomainsUi();
         }
     }
 
@@ -320,13 +273,65 @@ public class ParentZoneActivity extends AppCompatActivity {
                 Toast.makeText(this, isChecked ? "Posture Reminders Active 🧸" : "Posture Reminders Off", Toast.LENGTH_SHORT).show();
             });
         }
+    }
 
-        if (switchVolumeLimiter != null) {
-            switchVolumeLimiter.setChecked(prefs.isVolumeLimiterEnabled());
-            switchVolumeLimiter.setOnCheckedChangeListener((b, isChecked) -> {
-                prefs.setVolumeLimiterEnabled(isChecked);
-                Toast.makeText(this, isChecked ? "Ear Protection Volume Cap (70%) Enabled 🎧" : "Volume Cap Disabled", Toast.LENGTH_SHORT).show();
-            });
+    /**
+     * Volume Limiter: Toggle + SeekBar for custom percentage cap.
+     * When parent changes settings, immediately enforce via MelodyGlobalService.
+     */
+    private void setupVolumeControls() {
+        if (switchVolumeLimiter == null || seekBarVolumeCap == null || tvVolumeCapLabel == null) return;
+
+        boolean limiterEnabled = prefs.isVolumeLimiterEnabled();
+        int capPercent = prefs.getVolumeCapPercent();
+
+        switchVolumeLimiter.setChecked(limiterEnabled);
+        seekBarVolumeCap.setProgress(capPercent);
+        tvVolumeCapLabel.setText(capPercent + "%");
+        updateVolumeSliderVisibility(limiterEnabled);
+
+        switchVolumeLimiter.setOnCheckedChangeListener((b, isChecked) -> {
+            prefs.setVolumeLimiterEnabled(isChecked);
+            updateVolumeSliderVisibility(isChecked);
+            if (MelodyGlobalService.getInstance() != null) {
+                MelodyGlobalService.getInstance().enforceVolumeCap();
+            }
+            Toast.makeText(this,
+                    isChecked ? "🎧 Volume Limit Enabled (Max " + prefs.getVolumeCapPercent() + "%) 💕"
+                              : "Volume Limit Disabled — full volume allowed",
+                    Toast.LENGTH_SHORT).show();
+        });
+
+        seekBarVolumeCap.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (progress < 10) progress = 10; // Minimum 10%
+                tvVolumeCapLabel.setText(progress + "%");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                int progress = seekBar.getProgress();
+                if (progress < 10) progress = 10;
+                seekBar.setProgress(progress);
+                prefs.setVolumeCapPercent(progress);
+                tvVolumeCapLabel.setText(progress + "%");
+                // Apply immediately
+                if (MelodyGlobalService.getInstance() != null) {
+                    MelodyGlobalService.getInstance().enforceVolumeCap();
+                }
+                Toast.makeText(ParentZoneActivity.this,
+                        "🎧 Volume cap set to " + progress + "%", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateVolumeSliderVisibility(boolean visible) {
+        if (layoutVolumeSlider != null) {
+            layoutVolumeSlider.setVisibility(visible ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -471,15 +476,15 @@ public class ParentZoneActivity extends AppCompatActivity {
             TextView tv = new TextView(this);
             tv.setText("🌐 " + domain);
             tv.setTextColor(Color.parseColor("#E9D5FF"));
-            tv.setTextSize(13);
+            tv.setTextSize(11);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
             tv.setLayoutParams(lp);
 
             TextView btnDel = new TextView(this);
-            btnDel.setText("✕ Remove");
+            btnDel.setText("✕");
             btnDel.setTextColor(Color.parseColor("#F43F5E"));
             btnDel.setTextSize(11);
-            btnDel.setPadding(12, 6, 12, 6);
+            btnDel.setPadding(12, 4, 12, 4);
             btnDel.setOnClickListener(v -> {
                 prefs.removeSafeWebDomain(domain);
                 updateWhitelistDomainsUi();
@@ -499,11 +504,11 @@ public class ParentZoneActivity extends AppCompatActivity {
             SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss a", Locale.getDefault());
             String timeStr = sdf.format(new Date(lastLocation.timestamp));
             tvLocationInfo.setText(String.format(Locale.getDefault(),
-                    "📍 Coordinates: Lat %.5f, Lon %.5f (Accuracy: ±%.1fm, Updated: %s)",
+                    "📍 Lat %.5f, Lon %.5f (±%.1fm, %s)",
                     lastLocation.latitude, lastLocation.longitude, lastLocation.accuracy, timeStr));
             if (btnOpenMaps != null) btnOpenMaps.setEnabled(true);
         } else {
-            tvLocationInfo.setText("📍 Location: GPS signal standby. Ensure location is enabled in Android Settings.");
+            tvLocationInfo.setText("📍 GPS signal standby. Enable location in Android Settings.");
             if (btnOpenMaps != null) btnOpenMaps.setEnabled(false);
         }
     }
@@ -524,16 +529,16 @@ public class ParentZoneActivity extends AppCompatActivity {
         if (limitMins <= 0) {
             pbDailyUsage.setMax(120);
             pbDailyUsage.setProgress(Math.min(mins, 120));
-            tvStatsStatus.setText("Current Status: Active (Unlimited Time) 🟢");
+            tvStatsStatus.setText("Status: Active (Unlimited) 🟢");
             tvStatsStatus.setTextColor(Color.parseColor("#34D399"));
         } else {
             pbDailyUsage.setMax(limitMins);
             pbDailyUsage.setProgress(Math.min(mins, limitMins));
             if (mins >= limitMins) {
-                tvStatsStatus.setText("Current Status: Quota Reached (Locked) 🔴");
+                tvStatsStatus.setText("Status: Quota Reached 🔴");
                 tvStatsStatus.setTextColor(Color.parseColor("#EF4444"));
             } else {
-                tvStatsStatus.setText("Current Status: " + (limitMins - mins) + " mins remaining 🟢");
+                tvStatsStatus.setText("Status: " + (limitMins - mins) + " mins left 🟢");
                 tvStatsStatus.setTextColor(Color.parseColor("#34D399"));
             }
         }
@@ -551,7 +556,7 @@ public class ParentZoneActivity extends AppCompatActivity {
                 TextView tvEmpty = new TextView(this);
                 tvEmpty.setText("No app usage tracked yet today ✨");
                 tvEmpty.setTextColor(Color.parseColor("#9CA3AF"));
-                tvEmpty.setTextSize(12);
+                tvEmpty.setTextSize(11);
                 containerTopApps.addView(tvEmpty);
             } else {
                 int displayCount = Math.min(3, topList.size());
@@ -560,29 +565,29 @@ public class ParentZoneActivity extends AppCompatActivity {
                     LinearLayout row = new LinearLayout(this);
                     row.setOrientation(LinearLayout.HORIZONTAL);
                     row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-                    row.setPadding(8, 8, 8, 8);
+                    row.setPadding(6, 6, 6, 6);
                     row.setBackgroundColor(Color.parseColor("#26174D"));
 
                     LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                    rowLp.setMargins(0, 4, 0, 4);
+                    rowLp.setMargins(0, 3, 0, 3);
                     row.setLayoutParams(rowLp);
 
                     ImageView iv = new ImageView(this);
-                    iv.setLayoutParams(new LinearLayout.LayoutParams(36, 36));
+                    iv.setLayoutParams(new LinearLayout.LayoutParams(30, 30));
                     iv.setImageDrawable(info.icon);
 
                     TextView tvName = new TextView(this);
                     tvName.setText("  " + (i + 1) + ". " + info.label);
                     tvName.setTextColor(Color.WHITE);
-                    tvName.setTextSize(13);
+                    tvName.setTextSize(11);
                     LinearLayout.LayoutParams nameLp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
                     tvName.setLayoutParams(nameLp);
 
                     TextView tvTime = new TextView(this);
                     tvTime.setText(info.getTimeMinutes() + " mins");
                     tvTime.setTextColor(Color.parseColor("#F472B6"));
-                    tvTime.setTextSize(12);
+                    tvTime.setTextSize(10);
 
                     row.addView(iv);
                     row.addView(tvName);
