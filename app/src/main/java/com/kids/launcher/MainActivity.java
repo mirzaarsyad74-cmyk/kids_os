@@ -102,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ObjectAnimator chargingSparkleAnimator;
     private TextView btnVolumeQuick;
     private FrameLayout btnNotificationBell;
+    public static final String ACTION_SHOW_QUICK_SETTINGS = "com.kids.launcher.ACTION_SHOW_QUICK_SETTINGS";
+
     private View viewNotificationDot;
     private TextView btnWallpaperPicker;
     private TextView btnSosCall;
@@ -183,6 +185,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null) {
             lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        }
+        prefs.setAutoBrightness(true);
+        isAutoBrightness = true;
+        if (sensorManager != null && lightSensor != null) {
+            sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
         }
 
         initDefaultWhitelistIfNeeded();
@@ -399,14 +406,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 try {
                     WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                     if (wm != null) {
-                        boolean next = !wm.isWifiEnabled();
-                        wm.setWifiEnabled(next);
+                        boolean current = wm.isWifiEnabled();
+                        boolean next = !current;
+
+                        layoutQuickWifi.setBackgroundResource(next ? R.drawable.bg_melody_quick_tile_active : R.drawable.bg_melody_quick_tile_inactive);
+                        if (tvQuickWifiLabel != null) {
+                            tvQuickWifiLabel.setText(next ? "Enabling..." : "Disabling...");
+                            tvQuickWifiLabel.setTextColor(next ? Color.WHITE : Color.parseColor("#831843"));
+                        }
+
+                        boolean ok = wm.setWifiEnabled(next);
+                        if (!ok) {
+                            try {
+                                Settings.Global.putInt(getContentResolver(), Settings.Global.WIFI_ON, next ? 1 : 0);
+                            } catch (Exception ignored) {}
+                            try {
+                                Runtime.getRuntime().exec("svc wifi " + (next ? "enable" : "disable"));
+                            } catch (Exception ignored) {}
+                        }
                         Toast.makeText(this, next ? "Wi-Fi Enabled 🌸" : "Wi-Fi Disabled", Toast.LENGTH_SHORT).show();
                     }
                 } catch (Exception e) {
-                    try { startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)); } catch (Exception ignored) {}
+                    android.util.Log.e("MainActivity", "Failed to toggle Wi-Fi", e);
                 }
-                new Handler(Looper.getMainLooper()).postDelayed(this::updateQuickTilesUi, 500);
+                new Handler(Looper.getMainLooper()).postDelayed(this::updateQuickTilesUi, 1000);
             });
         }
 
@@ -415,7 +438,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 try {
                     BluetoothAdapter ba = BluetoothAdapter.getDefaultAdapter();
                     if (ba != null) {
-                        if (ba.isEnabled()) {
+                        boolean isBtOn = ba.isEnabled();
+                        boolean next = !isBtOn;
+
+                        layoutQuickBluetooth.setBackgroundResource(next ? R.drawable.bg_melody_quick_tile_active : R.drawable.bg_melody_quick_tile_inactive);
+                        if (tvQuickBtLabel != null) {
+                            tvQuickBtLabel.setText(next ? "Enabling..." : "Disabling...");
+                            tvQuickBtLabel.setTextColor(next ? Color.WHITE : Color.parseColor("#831843"));
+                        }
+
+                        if (isBtOn) {
                             ba.disable();
                             Toast.makeText(this, "Bluetooth Disabled", Toast.LENGTH_SHORT).show();
                         } else {
@@ -424,17 +456,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         }
                     }
                 } catch (Exception e) {
-                    try { startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)); } catch (Exception ignored) {}
+                    android.util.Log.e("MainActivity", "Failed to toggle Bluetooth", e);
                 }
-                new Handler(Looper.getMainLooper()).postDelayed(this::updateQuickTilesUi, 500);
+                new Handler(Looper.getMainLooper()).postDelayed(this::updateQuickTilesUi, 800);
             });
         }
 
         if (layoutQuickGps != null) {
             layoutQuickGps.setOnClickListener(v -> {
                 try {
-                    startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                } catch (Exception ignored) {}
+                    LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    boolean isGpsOn = lm != null && lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                    boolean next = !isGpsOn;
+
+                    // Direct toggle using WRITE_SECURE_SETTINGS - never open Android settings!
+                    Settings.Secure.putString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED, next ? "+gps" : "-gps");
+                    Toast.makeText(this, next ? "Location Enabled 📍🌸" : "Location Disabled", Toast.LENGTH_SHORT).show();
+                    updateQuickTilesUi();
+                } catch (Exception e) {
+                    android.util.Log.e("MainActivity", "Failed to toggle Location", e);
+                }
             });
         }
 
@@ -505,17 +546,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // Brightness Slider
         sbBrightness.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            private boolean userIsDragging = false;
+
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
+                if (fromUser && userIsDragging) {
                     setAutoBrightnessState(false);
                     setScreenBrightness(Math.max(10, progress) / 100.0f);
                 }
             }
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                userIsDragging = true;
+            }
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                userIsDragging = false;
+            }
         });
 
         // Turbo Boost RAM button
@@ -1307,7 +1354,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (sensorManager != null && lightSensor != null) {
                 sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
             }
+            WindowManager.LayoutParams lp = getWindow().getAttributes();
+            lp.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
+            getWindow().setAttributes(lp);
         }
+        updateQuickTilesUi();
         loadAllowedApps();
         checkPlaytimeState();
 
@@ -1322,6 +1373,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             boolean isFastCharger = (plugged == BatteryManager.BATTERY_PLUGGED_AC);
             gaugeBattery.setBatteryStatus(pct, isCharging, isFastCharger);
             if (tvBatteryPercent != null) tvBatteryPercent.setText(pct + "%");
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent != null && ACTION_SHOW_QUICK_SETTINGS.equals(intent.getAction())) {
+            toggleControlCenter(true);
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            setupNavBarAutoHide();
         }
     }
 
@@ -1708,6 +1776,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void onReceive(Context context, Intent intent) {
                 updateWifiIndicator();
+                updateQuickTilesUi();
             }
         };
         IntentFilter filter = new IntentFilter();
@@ -1715,6 +1784,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         filter.addAction(WifiManager.RSSI_CHANGED_ACTION);
         filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        filter.addAction(LocationManager.PROVIDERS_CHANGED_ACTION);
         registerReceiver(wifiReceiver, filter);
     }
 

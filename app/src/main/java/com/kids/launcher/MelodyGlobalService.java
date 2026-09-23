@@ -78,6 +78,7 @@ public class MelodyGlobalService extends AccessibilityService {
 
     // Health & Wellbeing Overlays
     private View blueLightOverlayView;
+    private View topStatusBarShieldView;
     private final Handler healthHandler = new Handler(Looper.getMainLooper());
     private Runnable postureRunnable;
 
@@ -114,17 +115,10 @@ public class MelodyGlobalService extends AccessibilityService {
                 String clsStr = cls != null ? cls.toString() : "";
 
                 if ("com.android.systemui".equals(pkgStr)) {
-                    // Lock down stock Android Notification Panel and Quick Settings
-                    if (clsStr.contains("NotificationShade")
-                            || clsStr.contains("NotificationPanel")
-                            || clsStr.contains("StatusBarWindowView")
-                            || clsStr.contains("HeadsUpStatusBarView")
-                            || clsStr.contains("Expanded")
-                            || clsStr.contains("QSPanel")
-                            || clsStr.contains("QuickSettings")) {
-                        performGlobalAction(GLOBAL_ACTION_BACK);
-                        return;
-                    }
+                    // Lock down stock Android Notification Panel and Quick Settings completely
+                    collapseStockStatusBar();
+                    performGlobalAction(GLOBAL_ACTION_BACK);
+                    return;
                 } else if (!pkgStr.contains("inputmethod")) {
                     boolean isHomeDesktop = "com.kids.launcher".equals(pkgStr)
                             && ("com.kids.launcher.MainActivity".equals(clsStr)
@@ -256,6 +250,7 @@ public class MelodyGlobalService extends AccessibilityService {
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
         restoreStockNavBar();
+        initStatusBarShield();
         initFloatingBatteryCapsule();
         initMelodyTouchOrb();
         setupBatteryReceiver();
@@ -324,6 +319,94 @@ public class MelodyGlobalService extends AccessibilityService {
         try {
             // Auto hide navigation bar after a short delay across the system
             Settings.Global.putString(getContentResolver(), "policy_control", "immersive.navigation=*");
+        } catch (Exception ignored) {}
+    }
+
+    private void initStatusBarShield() {
+        if (windowManager == null || topStatusBarShieldView != null) return;
+
+        int layoutType;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            layoutType = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
+        } else {
+            layoutType = WindowManager.LayoutParams.TYPE_PHONE;
+        }
+
+        int shieldHeight = (int) (40 * getResources().getDisplayMetrics().density);
+
+        WindowManager.LayoutParams shieldParams = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                shieldHeight,
+                layoutType,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT
+        );
+        shieldParams.gravity = Gravity.TOP | Gravity.START;
+
+        topStatusBarShieldView = new View(this);
+        topStatusBarShieldView.setBackgroundColor(Color.TRANSPARENT);
+
+        topStatusBarShieldView.setOnTouchListener(new View.OnTouchListener() {
+            private float startY = 0f;
+            private float startX = 0f;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        startY = event.getRawY();
+                        startX = event.getRawX();
+                        collapseStockStatusBar();
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+                        collapseStockStatusBar();
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        float dy = event.getRawY() - startY;
+                        float dx = Math.abs(event.getRawX() - startX);
+                        collapseStockStatusBar();
+                        if (dy > 12 || dx < 30) {
+                            openMelodyControlCenter();
+                        }
+                        return true;
+                }
+                return true;
+            }
+        });
+
+        try {
+            windowManager.addView(topStatusBarShieldView, shieldParams);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void collapseStockStatusBar() {
+        try {
+            Object statusBarService = getSystemService("statusbar");
+            if (statusBarService != null) {
+                java.lang.reflect.Method collapsePanels = statusBarService.getClass().getMethod("collapsePanels");
+                collapsePanels.invoke(statusBarService);
+            }
+        } catch (Exception e1) {
+            try {
+                Object statusBarService = getSystemService("statusbar");
+                if (statusBarService != null) {
+                    java.lang.reflect.Method collapse = statusBarService.getClass().getMethod("collapse");
+                    collapse.invoke(statusBarService);
+                }
+            } catch (Exception ignored) {}
+        }
+    }
+
+    public void openMelodyControlCenter() {
+        try {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setAction(MainActivity.ACTION_SHOW_QUICK_SETTINGS);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
         } catch (Exception ignored) {}
     }
 
@@ -912,6 +995,11 @@ public class MelodyGlobalService extends AccessibilityService {
         if (touchMusicListener != null) {
             MelodyMusicManager.getInstance().removeListener(touchMusicListener);
             touchMusicListener = null;
+        }
+
+        if (windowManager != null && topStatusBarShieldView != null) {
+            try { windowManager.removeView(topStatusBarShieldView); } catch (Exception ignored) {}
+            topStatusBarShieldView = null;
         }
 
         if (windowManager != null && floatingBatteryView != null) {

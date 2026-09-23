@@ -217,25 +217,15 @@ public class MelodyWifiView extends View {
 
     private void showWifiDetails() {
         if (!isWifiEnabled) {
-            Toast.makeText(getContext(), "📴 WiFi is turned OFF. Tap to enable in Settings 🌸", Toast.LENGTH_SHORT).show();
-            launchWifiSettings();
+            Toast.makeText(getContext(), "📴 Wi-Fi is turned OFF. Turn it ON in Control Center 🌸", Toast.LENGTH_SHORT).show();
         } else if (!isConnected) {
-            Toast.makeText(getContext(), "⚠️ WiFi Disconnected. Tap to choose network 🌸", Toast.LENGTH_SHORT).show();
-            launchWifiSettings();
+            Toast.makeText(getContext(), "⚠️ Wi-Fi Disconnected. Ask parents to connect in Parent Zone 🔒🌸", Toast.LENGTH_SHORT).show();
         } else {
             String speedStr = linkSpeedMbps > 0 ? " (" + linkSpeedMbps + " Mbps)" : "";
             String quality = signalLevel >= 4 ? "Excellent 🚀" : signalLevel >= 3 ? "Good 📶" : signalLevel >= 2 ? "Moderate 🌸" : "Weak ⚠️";
             String info = "📶 Connected: " + (ssid.isEmpty() ? "Wi-Fi" : ssid) + speedStr + "\nSignal: " + quality;
             Toast.makeText(getContext(), info, Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void launchWifiSettings() {
-        try {
-            Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            getContext().startActivity(intent);
-        } catch (Exception ignored) {}
     }
 
     private float dpToPx(float dp) {

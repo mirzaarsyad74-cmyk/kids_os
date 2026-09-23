@@ -104,6 +104,13 @@ This document contains essential context, architectural rules, environment confi
    * Always downsample images with `inSampleSize` when loading into memory.
    * Release Camera, MediaPlayer, and AudioTrack instances in `onPause()` and `onDestroy()`.
    * Heavy disk scans must run on background threads (`AsyncTask` or `Executors`).
+6. **OS FOR KIDS (ZERO RAW ANDROID EXPOSURE)**:
+   * Kids OS is a dedicated, self-contained operating system environment for children.
+   * Kids must NEVER be thrown into or exposed to stock Android Settings (`Settings.ACTION_*`) or unstyled system dialogs.
+   - All quick controls (Wi-Fi, Bluetooth, Location/GPS, Screen Rotation, Brightness, Sound, Flashlight) MUST be executed programmatically in the background using granted system permissions (`WRITE_SECURE_SETTINGS`, `WRITE_SETTINGS`, `CHANGE_WIFI_STATE`, `ACCESS_FINE_LOCATION`) or with custom My Melody UI dialogs.
+   - Stock Android Notification Bar and Quick Settings MUST be permanently disabled and physically touch-shielded via `TYPE_ACCESSIBILITY_OVERLAY` top touch barrier in `MelodyGlobalService` and `collapsePanels()`. Pulling down from top edge opens our Melody Control Center.
+   - Auto-Brightness must be enabled by default and dynamically adjust system brightness based on hardware ambient light sensor.
+
 
 ---
 
