@@ -2,6 +2,7 @@ package com.kids.launcher;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.provider.Settings;

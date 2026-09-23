@@ -101,51 +101,178 @@ public class MelodyGlobalService extends AccessibilityService {
         return instance;
     }
 
+    // In-App Purchase Blocker
+    private long lastIapBlockTime = 0;
+    private final Handler iapHandler = new Handler(Looper.getMainLooper());
+
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         if (isPendingAutoInstall) {
             handleAutoInstallEvent(event);
         }
 
-        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            CharSequence pkg = event.getPackageName();
+        int eventType = event.getEventType();
+        CharSequence pkg = event.getPackageName();
+        if (pkg == null) {
+            restoreStockNavBar();
+            return;
+        }
+        String pkgStr = pkg.toString();
+
+        // ── In-App Purchase Blocker ──
+        // Allow Play Store browsing & free downloads, but block any purchase/billing flow.
+
+        // Fast path: known billing activity class names from Google Play
+        if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+                && "com.android.vending".equals(pkgStr)) {
             CharSequence cls = event.getClassName();
-            if (pkg != null) {
-                String pkgStr = pkg.toString();
-                String clsStr = cls != null ? cls.toString() : "";
+            String clsStr = cls != null ? cls.toString().toLowerCase() : "";
+            if (clsStr.contains("purchase") || clsStr.contains("billing")
+                    || clsStr.contains("subscribe") || clsStr.contains("paymentflow")
+                    || clsStr.contains("lightpurchaseflow") || clsStr.contains("acquisitionactivity")) {
+                blockPurchaseAndGoBack();
+                return;
+            }
+        }
 
-                if ("com.android.systemui".equals(pkgStr)) {
-                    // Lock down stock Android Notification Panel and Quick Settings completely
-                    collapseStockStatusBar();
-                    performGlobalAction(GLOBAL_ACTION_BACK);
-                    return;
-                } else if (!pkgStr.contains("inputmethod")) {
-                    boolean isHomeDesktop = "com.kids.launcher".equals(pkgStr)
-                            && ("com.kids.launcher.MainActivity".equals(clsStr)
-                                || clsStr.endsWith(".MainActivity")
-                                || "MainActivity".equals(clsStr));
-
-                    boolean isDialogOnLauncher = "com.kids.launcher".equals(pkgStr)
-                            && (clsStr.contains("Dialog") || "android.app.Dialog".equals(clsStr));
-
-                    if (isHomeDesktop) {
-                        // At launcher: auto hide floating battery
-                        setFloatingBatteryVisible(false);
-                    } else if (!isDialogOnLauncher) {
-                        // When opening another app or activity: show floating battery!
-                        setFloatingBatteryVisible(true);
-                        // Automatically sweep background memory to prevent lag
-                        if (!pkgStr.equals(lastBoostedPackage)) {
-                            lastBoostedPackage = pkgStr;
-                            long freed = DeviceBooster.boostAndGetFreedMb(this, pkgStr);
-                            Toast.makeText(this, "🚀 Auto-Boost: " + freed + " MB RAM cleared for smooth play! 🌸", Toast.LENGTH_SHORT).show();
+        // Content scan: detect purchase UI inside Play Store or Google Play Services
+        if (eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
+                || eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            if ("com.android.vending".equals(pkgStr) || "com.google.android.gms".equals(pkgStr)) {
+                AccessibilityNodeInfo root = getRootInActiveWindow();
+                if (root != null) {
+                    try {
+                        if (nodeTreeContainsPurchaseUI(root)) {
+                            blockPurchaseAndGoBack();
+                            return;
                         }
+                    } finally {
+                        root.recycle();
+                    }
+                }
+            }
+        }
+
+        if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            CharSequence cls = event.getClassName();
+            String clsStr = cls != null ? cls.toString() : "";
+
+            if ("com.android.systemui".equals(pkgStr)) {
+                // Lock down stock Android Notification Panel and Quick Settings completely
+                collapseStockStatusBar();
+                performGlobalAction(GLOBAL_ACTION_BACK);
+                return;
+            } else if (!pkgStr.contains("inputmethod")) {
+                boolean isHomeDesktop = "com.kids.launcher".equals(pkgStr)
+                        && ("com.kids.launcher.MainActivity".equals(clsStr)
+                            || clsStr.endsWith(".MainActivity")
+                            || "MainActivity".equals(clsStr));
+
+                boolean isDialogOnLauncher = "com.kids.launcher".equals(pkgStr)
+                        && (clsStr.contains("Dialog") || "android.app.Dialog".equals(clsStr));
+
+                if (isHomeDesktop) {
+                    // At launcher: auto hide floating battery
+                    setFloatingBatteryVisible(false);
+                } else if (!isDialogOnLauncher) {
+                    // When opening another app or activity: show floating battery!
+                    setFloatingBatteryVisible(true);
+                    // Automatically sweep background memory to prevent lag
+                    if (!pkgStr.equals(lastBoostedPackage)) {
+                        lastBoostedPackage = pkgStr;
+                        long freed = DeviceBooster.boostAndGetFreedMb(this, pkgStr);
+                        Toast.makeText(this, "🚀 Auto-Boost: " + freed + " MB RAM cleared for smooth play! 🌸", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
         }
         restoreStockNavBar();
     }
+
+    /** Immediately dismiss purchase/billing window and show kid-friendly toast. */
+    private void blockPurchaseAndGoBack() {
+        performGlobalAction(GLOBAL_ACTION_BACK);
+        // Second press after 300ms for stubborn multi-layer dialogs
+        iapHandler.postDelayed(() -> performGlobalAction(GLOBAL_ACTION_BACK), 300);
+
+        long now = System.currentTimeMillis();
+        if (now - lastIapBlockTime > 3000) {
+            lastIapBlockTime = now;
+            Toast.makeText(this,
+                    "🌸 Purchases are blocked! Ask a parent for help 💕",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Scan the node tree for purchase-specific UI elements.
+     * Detects: "1-tap buy", "Buy" buttons, price strings (currency symbols),
+     * "Subscribe", payment methods. Does NOT trigger on "Install" or "Open".
+     */
+    private boolean nodeTreeContainsPurchaseUI(AccessibilityNodeInfo root) {
+        if (root == null) return false;
+
+        // High-confidence purchase keywords — these only appear in billing flows
+        String[] purchaseKeywords = {
+            "1-tap buy", "Payment method", "Add payment", "Add a payment",
+            "Beli dengan", "Metode pembayaran", "Langganan", "Berlangganan"
+        };
+        for (String keyword : purchaseKeywords) {
+            java.util.List<AccessibilityNodeInfo> matches = root.findAccessibilityNodeInfosByText(keyword);
+            if (matches != null && !matches.isEmpty()) {
+                return true;
+            }
+        }
+
+        // Check for "Buy" or "Subscribe" as clickable buttons (not just text in descriptions)
+        String[] buttonKeywords = {"Buy", "Subscribe", "Purchase", "Beli"};
+        for (String keyword : buttonKeywords) {
+            java.util.List<AccessibilityNodeInfo> matches = root.findAccessibilityNodeInfosByText(keyword);
+            if (matches != null) {
+                for (AccessibilityNodeInfo node : matches) {
+                    if (node.isClickable() || (node.getParent() != null && node.getParent().isClickable())) {
+                        // It's a clickable Buy/Subscribe button — this is a purchase flow
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // Scan for price patterns (currency symbols near numbers)
+        return scanForPriceNodes(root);
+    }
+
+    /** Recursively scan up to 50 nodes for price text (e.g. "$4.99", "Rp 79.000", "€2,99"). */
+    private boolean scanForPriceNodes(AccessibilityNodeInfo node) {
+        return scanForPriceNodesImpl(node, 0);
+    }
+
+    private boolean scanForPriceNodesImpl(AccessibilityNodeInfo node, int depth) {
+        if (node == null || depth > 8) return false;
+        CharSequence text = node.getText();
+        if (text != null) {
+            String t = text.toString();
+            // Match currency symbol + digits patterns
+            if (t.matches(".*[$€£¥₹₱₩]\\s*\\d.*")           // $4.99, €2.99, etc.
+                    || t.matches(".*\\d\\s*[$€£¥₹₱₩].*")     // 4.99$
+                    || t.matches("(?i).*Rp\\.?\\s*[\\d.].*")  // Rp 79.000 (Indonesian Rupiah)
+                    || t.matches("(?i).*RM\\s*[\\d.].*")      // RM 19.90 (Malaysian Ringgit)
+                    || t.matches("(?i).*IDR\\s*[\\d.].*")) {  // IDR 79000
+                // Found a price — but only flag if it looks like a button context (short text)
+                if (t.length() < 30) return true;
+            }
+        }
+        int childCount = node.getChildCount();
+        for (int i = 0; i < childCount && i < 50; i++) {
+            AccessibilityNodeInfo child = node.getChild(i);
+            if (child != null) {
+                if (scanForPriceNodesImpl(child, depth + 1)) return true;
+            }
+        }
+        return false;
+    }
+
+
 
     public void takeGlobalScreenshot() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -237,6 +364,7 @@ public class MelodyGlobalService extends AccessibilityService {
 
         return false;
     }
+
 
     @Override
     public void onInterrupt() {}
