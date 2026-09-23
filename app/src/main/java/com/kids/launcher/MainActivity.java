@@ -28,6 +28,10 @@ import android.os.Looper;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.content.ComponentName;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -80,6 +84,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ImageButton btnIwawaBack;
     private ImageButton btnIwawaMenu;
     private GridLayoutManager gridLayoutManager;
+    private MelodyWifiView ivWifiStatus;
+    private BroadcastReceiver wifiReceiver;
 
     private TextView tvTimerBadge;
     private LinearLayout layoutBatteryCapsule;
@@ -160,6 +166,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setupCategoryChips();
         setupControlCenter();
         setupBatteryReceiver();
+        setupWifiReceiver();
+        prewarmWebViewInBackground();
 
         tvAvatarBadge.setText(prefs.getAvatar());
         tvAvatarBadge.setOnClickListener(v -> showAvatarPicker());
@@ -247,6 +255,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             btnSosCall.setOnClickListener(v -> triggerSosCall());
         }
 
+        ivWifiStatus = findViewById(R.id.iv_wifi_status);
         tvAvatarBadge = findViewById(R.id.tv_avatar_badge);
         tvClock = findViewById(R.id.tv_clock);
         tvTimerBadge = findViewById(R.id.tv_timer_badge);
@@ -1462,5 +1471,60 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 unregisterReceiver(batteryReceiver);
             } catch (Exception ignored) {}
         }
+        if (wifiReceiver != null) {
+            try {
+                unregisterReceiver(wifiReceiver);
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private void setupWifiReceiver() {
+        updateWifiIndicator();
+        wifiReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                updateWifiIndicator();
+            }
+        };
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
+        filter.addAction(WifiManager.RSSI_CHANGED_ACTION);
+        filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(wifiReceiver, filter);
+    }
+
+    private void updateWifiIndicator() {
+        if (ivWifiStatus == null) return;
+        try {
+            WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wm == null) return;
+            boolean enabled = wm.isWifiEnabled();
+            if (!enabled) {
+                ivWifiStatus.updateWifiState(false, false, 0, 0, "");
+                return;
+            }
+            WifiInfo info = wm.getConnectionInfo();
+            boolean connected = false;
+            int level = 0;
+            int speed = 0;
+            String ssid = "";
+            if (info != null && info.getNetworkId() != -1) {
+                connected = true;
+                level = WifiManager.calculateSignalLevel(info.getRssi(), 5);
+                speed = info.getLinkSpeed();
+                ssid = info.getSSID();
+            }
+            ivWifiStatus.updateWifiState(enabled, connected, level, speed, ssid);
+        } catch (Exception ignored) {}
+    }
+
+    private void prewarmWebViewInBackground() {
+        new Thread(() -> {
+            try {
+                // Pre-warm Android System WebView to eliminate cold-start lag for YouTube and browsers
+                new android.webkit.WebView(getApplicationContext()).destroy();
+            } catch (Exception ignored) {}
+        }).start();
     }
 }

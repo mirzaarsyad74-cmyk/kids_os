@@ -21,3 +21,4 @@ dump_*.xml
 *.ps1
 check_gh.*
 create_repo_and_push.*
+.vscode/

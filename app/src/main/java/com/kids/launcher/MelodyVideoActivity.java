@@ -319,9 +319,9 @@ public class MelodyVideoActivity extends AppCompatActivity {
                     int mdhdPos = findSubarray(head, new byte[]{'m','d','h','d'}, trakPos);
                     if (tkhdPos != -1 && mdhdPos != -1 && tkhdPos < trakPos + 1024 && mdhdPos < trakPos + 1024) {
                         int tkhdVer = head[tkhdPos + 4] & 0xFF;
-                        int tid = (tkhdVer == 0) ? readInt32(head, tkhdPos + 16) : readInt32(head, tkhdPos + 24);
+                        int tid = (tkhdVer == 0) ? readInt32(head, tkhdPos + 20) : readInt32(head, tkhdPos + 28);
                         int mdhdVer = head[mdhdPos + 4] & 0xFF;
-                        int ts = (mdhdVer == 0) ? readInt32(head, mdhdPos + 16) : readInt32(head, mdhdPos + 24);
+                        int ts = (mdhdVer == 0) ? readInt32(head, mdhdPos + 20) : readInt32(head, mdhdPos + 28);
                         if (tid > 0 && ts > 0) {
                             trackTimescales.put(tid, ts);
                         }
@@ -344,10 +344,12 @@ public class MelodyVideoActivity extends AppCompatActivity {
                     if (tfdtPos != -1 && tfdtPos - tfhdPos < 128) {
                         int ver = tail[tfdtPos + 4] & 0xFF;
                         long baseTime = (ver == 0) ? (readInt32(tail, tfdtPos + 8) & 0xFFFFFFFFL) : readInt64(tail, tfdtPos + 8);
-                        int ts = trackTimescales.containsKey(tid) ? trackTimescales.get(tid) : (trackTimescales.containsKey(1) ? trackTimescales.get(1) : 1000);
+                        int ts = trackTimescales.containsKey(tid) ? trackTimescales.get(tid)
+                                : (trackTimescales.containsKey(1) ? trackTimescales.get(1)
+                                : (trackTimescales.containsKey(2) ? trackTimescales.get(2) : 1000));
                         if (ts > 0 && baseTime > 0) {
                             long durMs = (baseTime * 1000L) / (long) ts;
-                            if (durMs > maxDurMs) {
+                            if (durMs > maxDurMs && durMs < 86400000L) {
                                 maxDurMs = durMs;
                             }
                         }
@@ -1028,20 +1030,23 @@ public class MelodyVideoActivity extends AppCompatActivity {
             lp.gravity = Gravity.CENTER;
             vvPlayer.setScaleX(1.0f);
             vvPlayer.setScaleY(1.0f);
+            Toast.makeText(this, "Aspect Ratio: Best Fit 📐", Toast.LENGTH_SHORT).show();
         } else if (currentAspectMode == 1) {
-            btnPlayerAspect.setText("📐 Fill");
+            btnPlayerAspect.setText("⛶ Fill");
             lp.width = FrameLayout.LayoutParams.MATCH_PARENT;
             lp.height = FrameLayout.LayoutParams.MATCH_PARENT;
             lp.gravity = Gravity.CENTER;
             vvPlayer.setScaleX(1.0f);
             vvPlayer.setScaleY(1.0f);
+            Toast.makeText(this, "Aspect Ratio: Full Stretch ⛶", Toast.LENGTH_SHORT).show();
         } else {
-            btnPlayerAspect.setText("📐 Zoom");
+            btnPlayerAspect.setText("🔍 Zoom");
             lp.width = FrameLayout.LayoutParams.MATCH_PARENT;
             lp.height = FrameLayout.LayoutParams.MATCH_PARENT;
             lp.gravity = Gravity.CENTER;
-            vvPlayer.setScaleX(1.25f);
-            vvPlayer.setScaleY(1.25f);
+            vvPlayer.setScaleX(1.30f);
+            vvPlayer.setScaleY(1.30f);
+            Toast.makeText(this, "Aspect Ratio: Crop Zoom 1.3x 🔍", Toast.LENGTH_SHORT).show();
         }
         vvPlayer.setLayoutParams(lp);
         scheduleHideControls();
@@ -1061,6 +1066,7 @@ public class MelodyVideoActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+        Toast.makeText(this, "Speed: " + PLAYBACK_SPEED_LABELS[currentSpeedIndex], Toast.LENGTH_SHORT).show();
         scheduleHideControls();
     }
 
@@ -1348,12 +1354,12 @@ public class MelodyVideoActivity extends AppCompatActivity {
             }
         } catch (Exception ignored) {}
 
-        File f = new File(item.path);
-        if (f.exists()) {
-            vvPlayer.setVideoURI(Uri.fromFile(f));
-        } else {
-            vvPlayer.setVideoPath(item.path);
-        }
+        vvPlayer.setOnErrorListener((mp, what, extra) -> {
+            // Suppress default Android "Can't play this video." dialog
+            return true;
+        });
+
+        vvPlayer.setVideoPath(item.path);
 
         vvPlayer.setOnPreparedListener(mp -> {
             underlyingMediaPlayer = mp;

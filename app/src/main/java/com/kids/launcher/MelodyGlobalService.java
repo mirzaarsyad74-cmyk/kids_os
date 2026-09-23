@@ -112,6 +112,13 @@ public class MelodyGlobalService extends AccessibilityService {
             if (pkg != null) {
                 String pkgStr = pkg.toString();
                 String clsStr = cls != null ? cls.toString() : "";
+                // 🛡️ BLOCK IN-APP PURCHASES: Intercept Google Play Billing / In-App Purchase Prompts
+                if ("com.android.vending".equals(pkgStr)) {
+                    performGlobalAction(GLOBAL_ACTION_BACK);
+                    Toast.makeText(this, "🛡️ In-App Purchases are blocked by Melody Parental Guard! 🌸", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 if (!"com.android.systemui".equals(pkgStr) && !pkgStr.contains("inputmethod")) {
                     boolean isHomeDesktop = "com.kids.launcher".equals(pkgStr)
                             && ("com.kids.launcher.MainActivity".equals(clsStr)
@@ -605,8 +612,8 @@ public class MelodyGlobalService extends AccessibilityService {
 
         touchOrbParams.gravity = Gravity.TOP | Gravity.LEFT;
         DisplayMetrics dm = getResources().getDisplayMetrics();
-        touchOrbParams.x = (int) dpToPx(12);
-        touchOrbParams.y = dm.heightPixels / 2 - (int) dpToPx(26);
+        touchOrbParams.x = (int) dpToPx(8);
+        touchOrbParams.y = dm.heightPixels / 2 - (int) dpToPx(34);
 
         setupTouchOrbDragAndClick(touchOrbView, touchOrbParams);
 
@@ -623,7 +630,7 @@ public class MelodyGlobalService extends AccessibilityService {
             private int initialY;
             private float initialTouchX;
             private float initialTouchY;
-            private boolean isMoved = false;
+            private boolean isDragging = false;
             private long touchDownTime;
 
             @Override
@@ -635,21 +642,27 @@ public class MelodyGlobalService extends AccessibilityService {
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
                         touchDownTime = System.currentTimeMillis();
-                        isMoved = false;
+                        isDragging = false;
                         v.setAlpha(1.0f);
-                        v.animate().scaleX(1.15f).scaleY(1.15f).setDuration(80).start();
+                        v.animate().scaleX(1.12f).scaleY(1.12f).setDuration(80).start();
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
-                        int dx = (int) (event.getRawX() - initialTouchX);
-                        int dy = (int) (event.getRawY() - initialTouchY);
-                        if (Math.abs(dx) > 14 || Math.abs(dy) > 14) {
-                            isMoved = true;
+                        float deltaX = event.getRawX() - initialTouchX;
+                        float deltaY = event.getRawY() - initialTouchY;
+                        float distance = (float) Math.hypot(deltaX, deltaY);
+
+                        // Only begin moving window layout if movement exceeds touch slop (18dp)
+                        if (!isDragging && distance > dpToPx(18)) {
+                            isDragging = true;
                         }
-                        params.x = initialX + dx;
-                        params.y = initialY + dy;
-                        if (windowManager != null && touchOrbView != null) {
-                            try { windowManager.updateViewLayout(touchOrbView, params); } catch (Exception ignored) {}
+
+                        if (isDragging) {
+                            params.x = initialX + (int) deltaX;
+                            params.y = initialY + (int) deltaY;
+                            if (windowManager != null && touchOrbView != null) {
+                                try { windowManager.updateViewLayout(touchOrbView, params); } catch (Exception ignored) {}
+                            }
                         }
                         return true;
 
@@ -657,19 +670,32 @@ public class MelodyGlobalService extends AccessibilityService {
                     case MotionEvent.ACTION_CANCEL:
                         v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(120).start();
                         long duration = System.currentTimeMillis() - touchDownTime;
-                        if (!isMoved && duration < 600) {
+                        float totalDist = (float) Math.hypot(event.getRawX() - initialTouchX, event.getRawY() - initialTouchY);
+
+                        // If moved less than click slop (28dp) and released within 850ms -> ALWAYS A CLICK!
+                        if (!isDragging || (totalDist < dpToPx(28) && duration < 850)) {
+                            // Reset back to initial pos so micro jitter doesn't move it
+                            params.x = initialX;
+                            params.y = initialY;
+                            if (windowManager != null && touchOrbView != null) {
+                                try { windowManager.updateViewLayout(touchOrbView, params); } catch (Exception ignored) {}
+                            }
+                            try {
+                                v.playSoundEffect(android.view.SoundEffectConstants.CLICK);
+                            } catch (Exception ignored) {}
                             showTouchMenu();
                         } else {
+                            // Drag completed: snap to nearest screen edge (left or right)
                             DisplayMetrics metrics = getResources().getDisplayMetrics();
-                            int orbSize = (int) dpToPx(52);
+                            int orbSize = (int) dpToPx(68);
                             int middle = metrics.widthPixels / 2;
                             if (params.x + orbSize / 2 < middle) {
-                                params.x = (int) dpToPx(8);
+                                params.x = (int) dpToPx(4);
                             } else {
-                                params.x = metrics.widthPixels - orbSize - (int) dpToPx(8);
+                                params.x = metrics.widthPixels - orbSize - (int) dpToPx(4);
                             }
                             int maxY = metrics.heightPixels - orbSize - (int) dpToPx(48);
-                            params.y = Math.max((int) dpToPx(24), Math.min(params.y, maxY));
+                            params.y = Math.max((int) dpToPx(20), Math.min(params.y, maxY));
                             if (windowManager != null && touchOrbView != null) {
                                 try { windowManager.updateViewLayout(touchOrbView, params); } catch (Exception ignored) {}
                             }
