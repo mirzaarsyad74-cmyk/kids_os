@@ -112,12 +112,6 @@ public class MelodyGlobalService extends AccessibilityService {
             if (pkg != null) {
                 String pkgStr = pkg.toString();
                 String clsStr = cls != null ? cls.toString() : "";
-                // 🛡️ BLOCK IN-APP PURCHASES: Intercept Google Play Billing / In-App Purchase Prompts
-                if ("com.android.vending".equals(pkgStr)) {
-                    performGlobalAction(GLOBAL_ACTION_BACK);
-                    Toast.makeText(this, "🛡️ In-App Purchases are blocked by Melody Parental Guard! 🌸", Toast.LENGTH_SHORT).show();
-                    return;
-                }
 
                 if (!"com.android.systemui".equals(pkgStr) && !pkgStr.contains("inputmethod")) {
                     boolean isHomeDesktop = "com.kids.launcher".equals(pkgStr)
