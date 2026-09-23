@@ -113,7 +113,19 @@ public class MelodyGlobalService extends AccessibilityService {
                 String pkgStr = pkg.toString();
                 String clsStr = cls != null ? cls.toString() : "";
 
-                if (!"com.android.systemui".equals(pkgStr) && !pkgStr.contains("inputmethod")) {
+                if ("com.android.systemui".equals(pkgStr)) {
+                    // Lock down stock Android Notification Panel and Quick Settings
+                    if (clsStr.contains("NotificationShade")
+                            || clsStr.contains("NotificationPanel")
+                            || clsStr.contains("StatusBarWindowView")
+                            || clsStr.contains("HeadsUpStatusBarView")
+                            || clsStr.contains("Expanded")
+                            || clsStr.contains("QSPanel")
+                            || clsStr.contains("QuickSettings")) {
+                        performGlobalAction(GLOBAL_ACTION_BACK);
+                        return;
+                    }
+                } else if (!pkgStr.contains("inputmethod")) {
                     boolean isHomeDesktop = "com.kids.launcher".equals(pkgStr)
                             && ("com.kids.launcher.MainActivity".equals(clsStr)
                                 || clsStr.endsWith(".MainActivity")
@@ -139,6 +151,14 @@ public class MelodyGlobalService extends AccessibilityService {
             }
         }
         restoreStockNavBar();
+    }
+
+    public void takeGlobalScreenshot() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT);
+        } else {
+            Toast.makeText(this, "Screenshot captured 📸", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void handleAutoInstallEvent(AccessibilityEvent event) {

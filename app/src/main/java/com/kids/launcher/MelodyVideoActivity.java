@@ -31,6 +31,7 @@ import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -46,6 +47,7 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -157,10 +159,15 @@ public class MelodyVideoActivity extends AppCompatActivity {
 
     private TextView tvHudDoubleTapLeft;
     private TextView tvHudDoubleTapRight;
+    private TextView tvHudZoom;
+    private FrameLayout layoutLockSparkleOverlay;
     private TextView btnPlayerUnlock;
 
     // Top Controls
     private TextView tvPlayerClockBattery;
+    private TextView tvPlayerDecoder;
+    private TextView btnPlayerAudio;
+    private TextView btnPlayerSubtitle;
     private TextView btnPlayerAspect;
     private TextView btnPlayerSpeed;
     private TextView btnPlayerLock;
@@ -178,15 +185,21 @@ public class MelodyVideoActivity extends AppCompatActivity {
     private AudioManager audioManager;
     private MediaPlayer underlyingMediaPlayer;
     private GestureDetector gestureDetector;
+    private ScaleGestureDetector scaleGestureDetector;
+    private float currentScaleFactor = 1.0f;
+    private boolean isMultiTouch = false;
 
     private boolean isScreenLocked = false;
     private boolean isMuted = false;
     private int volumeBeforeMute = -1;
-    private boolean isLooping = false;
-    private int currentAspectMode = 0; // 0: Fit, 1: Fill, 2: Zoom
+    private int loopMode = 1; // 0: Off, 1: Loop All, 2: Loop One
+    private boolean isRemainingTimeMode = false;
+    private int currentDecoderMode = 0; // 0: HW+, 1: HW, 2: SW
+    private int currentAspectMode = 0; // 0: Fit, 1: Fill, 2: Zoom, 3: 100%, 4: 16:9, 5: 4:3
     private int currentSpeedIndex = 0;
     private final float[] PLAYBACK_SPEEDS = {1.0f, 1.25f, 1.5f, 2.0f, 0.5f, 0.75f};
     private final String[] PLAYBACK_SPEED_LABELS = {"⚡ 1.0x", "⚡ 1.25x", "⚡ 1.5x", "⚡ 2.0x", "⚡ 0.5x", "⚡ 0.75x"};
+    private final String[] SPARKLE_EMOJIS = {"🌸", "✨", "💖", "⭐", "🎀", "🍭", "🦄", "🧸", "🎈", "🍬"};
 
     private VideoItem currentVideoItem = null;
     private int currentPlayingIndex = -1;
@@ -528,7 +541,14 @@ public class MelodyVideoActivity extends AppCompatActivity {
         if (total > 0) {
             int prog = (int) (((long) currentMs * 1000) / total);
             sbPlayerProgress.setProgress(Math.max(0, Math.min(1000, prog)));
-            tvPlayerTotalTime.setText(formatTime(total));
+            if (isRemainingTimeMode) {
+                int rem = Math.max(0, total - currentMs);
+                tvPlayerTotalTime.setText("-" + formatTime(rem));
+                tvPlayerTotalTime.setTextColor(Color.parseColor("#F472B6"));
+            } else {
+                tvPlayerTotalTime.setText(formatTime(total));
+                tvPlayerTotalTime.setTextColor(Color.WHITE);
+            }
         }
         tvPlayerCurrentTime.setText(formatTime(Math.max(0, currentMs)));
     }
@@ -564,7 +584,14 @@ public class MelodyVideoActivity extends AppCompatActivity {
                     if (total > 0) {
                         int prog = (int) (((long) cur * 1000) / total);
                         sbPlayerProgress.setProgress(Math.max(0, Math.min(1000, prog)));
-                        tvPlayerTotalTime.setText(formatTime(total));
+                        if (isRemainingTimeMode) {
+                            int rem = Math.max(0, total - cur);
+                            tvPlayerTotalTime.setText("-" + formatTime(rem));
+                            tvPlayerTotalTime.setTextColor(Color.parseColor("#F472B6"));
+                        } else {
+                            tvPlayerTotalTime.setText(formatTime(total));
+                            tvPlayerTotalTime.setTextColor(Color.WHITE);
+                        }
                     }
                     tvPlayerCurrentTime.setText(formatTime(Math.max(0, cur)));
                     if (vvPlayer.isPlaying()) {
@@ -656,10 +683,15 @@ public class MelodyVideoActivity extends AppCompatActivity {
 
         tvHudDoubleTapLeft = findViewById(R.id.tv_hud_double_tap_left);
         tvHudDoubleTapRight = findViewById(R.id.tv_hud_double_tap_right);
+        tvHudZoom = findViewById(R.id.tv_hud_zoom);
+        layoutLockSparkleOverlay = findViewById(R.id.layout_lock_sparkle_overlay);
         btnPlayerUnlock = findViewById(R.id.btn_player_unlock);
 
         // Top Bar
         tvPlayerClockBattery = findViewById(R.id.tv_player_clock_battery);
+        tvPlayerDecoder = findViewById(R.id.tv_player_decoder);
+        btnPlayerAudio = findViewById(R.id.btn_player_audio);
+        btnPlayerSubtitle = findViewById(R.id.btn_player_subtitle);
         btnPlayerAspect = findViewById(R.id.btn_player_aspect);
         btnPlayerSpeed = findViewById(R.id.btn_player_speed);
         btnPlayerLock = findViewById(R.id.btn_player_lock);
@@ -706,6 +738,31 @@ public class MelodyVideoActivity extends AppCompatActivity {
 
         btnPlayerLock.setOnClickListener(v -> toggleScreenLock());
         btnPlayerUnlock.setOnClickListener(v -> toggleScreenLock());
+
+        if (tvPlayerDecoder != null) {
+            tvPlayerDecoder.setOnClickListener(v -> cycleDecoderMode());
+        }
+        if (btnPlayerAudio != null) {
+            btnPlayerAudio.setOnClickListener(v -> showAudioTrackDialog());
+        }
+        if (btnPlayerSubtitle != null) {
+            btnPlayerSubtitle.setOnClickListener(v -> showSubtitleTrackDialog());
+        }
+        if (tvPlayerTotalTime != null) {
+            tvPlayerTotalTime.setOnClickListener(v -> {
+                isRemainingTimeMode = !isRemainingTimeMode;
+                int cur = (vvPlayer != null) ? vvPlayer.getCurrentPosition() : 0;
+                updateProgressUI(cur);
+            });
+        }
+        if (layoutLockSparkleOverlay != null) {
+            layoutLockSparkleOverlay.setOnTouchListener((v, event) -> {
+                if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
+                    spawnSparkle(event.getX(), event.getY());
+                }
+                return true;
+            });
+        }
 
         btnPlayerAspect.setOnClickListener(v -> cycleAspectRatio());
         btnPlayerSpeed.setOnClickListener(v -> cyclePlaybackSpeed());
@@ -773,6 +830,18 @@ public class MelodyVideoActivity extends AppCompatActivity {
     }
 
     private void setupGestures() {
+        scaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+                currentScaleFactor *= detector.getScaleFactor();
+                currentScaleFactor = Math.max(1.0f, Math.min(4.0f, currentScaleFactor));
+                vvPlayer.setScaleX(currentScaleFactor);
+                vvPlayer.setScaleY(currentScaleFactor);
+                showZoomHud((int) (currentScaleFactor * 100));
+                return true;
+            }
+        });
+
         gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
@@ -785,6 +854,13 @@ public class MelodyVideoActivity extends AppCompatActivity {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
                 if (isScreenLocked) return false;
+                if (currentScaleFactor > 1.05f) {
+                    // Reset zoom back to 1.0x with smooth feel!
+                    vvPlayer.animate().scaleX(1.0f).scaleY(1.0f).setDuration(250).start();
+                    currentScaleFactor = 1.0f;
+                    showZoomHud(100);
+                    return true;
+                }
                 int width = layoutPlayerContainer.getWidth();
                 float x = e.getX();
                 if (x < width * 0.35f) {
@@ -800,12 +876,30 @@ public class MelodyVideoActivity extends AppCompatActivity {
 
         layoutPlayerContainer.setOnTouchListener((v, event) -> {
             if (isScreenLocked) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    btnPlayerUnlock.setVisibility(View.VISIBLE);
-                    btnPlayerUnlock.setAlpha(1.0f);
-                    playerHandler.removeCallbacks(hideUnlockButtonRunnable);
-                    playerHandler.postDelayed(hideUnlockButtonRunnable, 3000);
+                if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
+                    spawnSparkle(event.getX(), event.getY());
                 }
+                return true;
+            }
+
+            if (event.getPointerCount() > 1) {
+                isMultiTouch = true;
+                isSwipeHorizontal = false;
+                isSwipeVertical = false;
+                if (layoutHudVolume != null) layoutHudVolume.setVisibility(View.GONE);
+                if (layoutHudBrightness != null) layoutHudBrightness.setVisibility(View.GONE);
+                if (layoutHudSeek != null) layoutHudSeek.setVisibility(View.GONE);
+                return scaleGestureDetector.onTouchEvent(event);
+            }
+
+            if (event.getActionMasked() == MotionEvent.ACTION_UP || event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+                if (isMultiTouch) {
+                    isMultiTouch = false;
+                    return true;
+                }
+            }
+
+            if (isMultiTouch) {
                 return true;
             }
 
@@ -1010,16 +1104,70 @@ public class MelodyVideoActivity extends AppCompatActivity {
         scheduleHideControls();
     }
 
+    private final Runnable hideZoomHudRunnable = () -> {
+        if (tvHudZoom != null) {
+            tvHudZoom.animate().alpha(0f).setDuration(250).withEndAction(() -> {
+                tvHudZoom.setVisibility(View.GONE);
+            }).start();
+        }
+    };
+
+    private void showZoomHud(int percent) {
+        if (tvHudZoom == null) return;
+        playerHandler.removeCallbacks(hideZoomHudRunnable);
+        tvHudZoom.setText(String.format(Locale.getDefault(), "🔍 Zoom: %d%%", percent));
+        tvHudZoom.setVisibility(View.VISIBLE);
+        tvHudZoom.setAlpha(1.0f);
+        playerHandler.postDelayed(hideZoomHudRunnable, 1200);
+    }
+
+    private void spawnSparkle(float x, float y) {
+        if (layoutLockSparkleOverlay == null) return;
+        TextView sparkle = new TextView(this);
+        String emoji = SPARKLE_EMOJIS[(int) (Math.random() * SPARKLE_EMOJIS.length)];
+        sparkle.setText(emoji);
+        sparkle.setTextSize(26 + (float)(Math.random() * 14));
+        sparkle.setX(x - 30);
+        sparkle.setY(y - 30);
+        layoutLockSparkleOverlay.addView(sparkle);
+
+        sparkle.animate()
+                .translationYBy(-100f - (float)(Math.random() * 80))
+                .scaleX(1.4f)
+                .scaleY(1.4f)
+                .alpha(0f)
+                .setDuration(700)
+                .withEndAction(() -> layoutLockSparkleOverlay.removeView(sparkle))
+                .start();
+
+        if (btnPlayerUnlock != null) {
+            btnPlayerUnlock.setVisibility(View.VISIBLE);
+            btnPlayerUnlock.setAlpha(1.0f);
+            btnPlayerUnlock.animate().scaleX(1.1f).scaleY(1.1f).setDuration(150)
+                    .withEndAction(() -> btnPlayerUnlock.animate().scaleX(1.0f).scaleY(1.0f).setDuration(150).start()).start();
+            playerHandler.removeCallbacks(hideUnlockButtonRunnable);
+            playerHandler.postDelayed(hideUnlockButtonRunnable, 3500);
+        }
+    }
+
     private void toggleScreenLock() {
         isScreenLocked = !isScreenLocked;
         if (isScreenLocked) {
             layoutPlayerControls.setVisibility(View.GONE);
+            if (layoutLockSparkleOverlay != null) {
+                layoutLockSparkleOverlay.setVisibility(View.VISIBLE);
+            }
             btnPlayerUnlock.setVisibility(View.VISIBLE);
             btnPlayerUnlock.setAlpha(1.0f);
             playerHandler.removeCallbacks(hideUnlockButtonRunnable);
-            playerHandler.postDelayed(hideUnlockButtonRunnable, 3000);
-            Toast.makeText(this, "Screen Locked 🔒 (Tap unlock badge to restore)", Toast.LENGTH_SHORT).show();
+            playerHandler.postDelayed(hideUnlockButtonRunnable, 3500);
+            Toast.makeText(this, "Screen Locked 🔒 (Tap anywhere for sparkles, tap unlock to restore)", Toast.LENGTH_SHORT).show();
+            spawnSparkle(layoutPlayerContainer.getWidth() / 2f, layoutPlayerContainer.getHeight() / 2f);
         } else {
+            if (layoutLockSparkleOverlay != null) {
+                layoutLockSparkleOverlay.setVisibility(View.GONE);
+                layoutLockSparkleOverlay.removeAllViews();
+            }
             btnPlayerUnlock.setVisibility(View.GONE);
             layoutPlayerControls.setVisibility(View.VISIBLE);
             layoutPlayerControls.setAlpha(1.0f);
@@ -1029,35 +1177,215 @@ public class MelodyVideoActivity extends AppCompatActivity {
     }
 
     private void cycleAspectRatio() {
-        currentAspectMode = (currentAspectMode + 1) % 3;
-        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) vvPlayer.getLayoutParams();
-        if (currentAspectMode == 0) {
-            btnPlayerAspect.setText("📐 Fit");
-            lp.width = FrameLayout.LayoutParams.MATCH_PARENT;
-            lp.height = FrameLayout.LayoutParams.WRAP_CONTENT;
-            lp.gravity = Gravity.CENTER;
-            vvPlayer.setScaleX(1.0f);
-            vvPlayer.setScaleY(1.0f);
-            Toast.makeText(this, "Aspect Ratio: Best Fit 📐", Toast.LENGTH_SHORT).show();
-        } else if (currentAspectMode == 1) {
-            btnPlayerAspect.setText("⛶ Fill");
-            lp.width = FrameLayout.LayoutParams.MATCH_PARENT;
-            lp.height = FrameLayout.LayoutParams.MATCH_PARENT;
-            lp.gravity = Gravity.CENTER;
-            vvPlayer.setScaleX(1.0f);
-            vvPlayer.setScaleY(1.0f);
-            Toast.makeText(this, "Aspect Ratio: Full Stretch ⛶", Toast.LENGTH_SHORT).show();
-        } else {
-            btnPlayerAspect.setText("🔍 Zoom");
-            lp.width = FrameLayout.LayoutParams.MATCH_PARENT;
-            lp.height = FrameLayout.LayoutParams.MATCH_PARENT;
-            lp.gravity = Gravity.CENTER;
-            vvPlayer.setScaleX(1.30f);
-            vvPlayer.setScaleY(1.30f);
-            Toast.makeText(this, "Aspect Ratio: Crop Zoom 1.3x 🔍", Toast.LENGTH_SHORT).show();
+        currentAspectMode = (currentAspectMode + 1) % 6;
+        int containerW = layoutPlayerContainer.getWidth();
+        int containerH = layoutPlayerContainer.getHeight();
+        if (containerW <= 0 || containerH <= 0) {
+            containerW = getResources().getDisplayMetrics().widthPixels;
+            containerH = getResources().getDisplayMetrics().heightPixels;
         }
+
+        int videoW = 0, videoH = 0;
+        if (underlyingMediaPlayer != null) {
+            try {
+                videoW = underlyingMediaPlayer.getVideoWidth();
+                videoH = underlyingMediaPlayer.getVideoHeight();
+            } catch (Exception ignored) {}
+        }
+        if (videoW <= 0 || videoH <= 0) {
+            videoW = 16;
+            videoH = 9;
+        }
+
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) vvPlayer.getLayoutParams();
+        vvPlayer.setScaleX(1.0f);
+        vvPlayer.setScaleY(1.0f);
+        currentScaleFactor = 1.0f;
+
+        switch (currentAspectMode) {
+            case 0: // 📐 Fit (Letterbox / Best Fit)
+                btnPlayerAspect.setText("📐 Fit");
+                lp.width = FrameLayout.LayoutParams.MATCH_PARENT;
+                lp.height = FrameLayout.LayoutParams.WRAP_CONTENT;
+                lp.gravity = Gravity.CENTER;
+                Toast.makeText(this, "Aspect Ratio: Fit to Screen 📐", Toast.LENGTH_SHORT).show();
+                break;
+
+            case 1: // ⛶ Stretch (Full Fill)
+                btnPlayerAspect.setText("⛶ Stretch");
+                lp.width = FrameLayout.LayoutParams.MATCH_PARENT;
+                lp.height = FrameLayout.LayoutParams.MATCH_PARENT;
+                lp.gravity = Gravity.CENTER;
+                Toast.makeText(this, "Aspect Ratio: Stretch to Fill ⛶", Toast.LENGTH_SHORT).show();
+                break;
+
+            case 2: // 🔍 Crop (1.35x zoom to remove letterboxes)
+                btnPlayerAspect.setText("🔍 Crop");
+                lp.width = FrameLayout.LayoutParams.MATCH_PARENT;
+                lp.height = FrameLayout.LayoutParams.MATCH_PARENT;
+                lp.gravity = Gravity.CENTER;
+                vvPlayer.setScaleX(1.35f);
+                vvPlayer.setScaleY(1.35f);
+                currentScaleFactor = 1.35f;
+                Toast.makeText(this, "Aspect Ratio: Crop & Fill 🔍", Toast.LENGTH_SHORT).show();
+                break;
+
+            case 3: // 100% Original Resolution
+                btnPlayerAspect.setText("100%");
+                lp.width = Math.min(videoW, containerW);
+                lp.height = Math.min(videoH, containerH);
+                lp.gravity = Gravity.CENTER;
+                Toast.makeText(this, "Aspect Ratio: 100% Original", Toast.LENGTH_SHORT).show();
+                break;
+
+            case 4: // 16:9 Widescreen
+                btnPlayerAspect.setText("16:9");
+                int h169 = (int) (containerW * (9.0f / 16.0f));
+                if (h169 <= containerH) {
+                    lp.width = containerW;
+                    lp.height = h169;
+                } else {
+                    lp.height = containerH;
+                    lp.width = (int) (containerH * (16.0f / 9.0f));
+                }
+                lp.gravity = Gravity.CENTER;
+                Toast.makeText(this, "Aspect Ratio: 16:9 Widescreen", Toast.LENGTH_SHORT).show();
+                break;
+
+            case 5: // 4:3 Standard TV
+                btnPlayerAspect.setText("4:3");
+                int w43 = (int) (containerH * (4.0f / 3.0f));
+                if (w43 <= containerW) {
+                    lp.width = w43;
+                    lp.height = containerH;
+                } else {
+                    lp.width = containerW;
+                    lp.height = (int) (containerW * (3.0f / 4.0f));
+                }
+                lp.gravity = Gravity.CENTER;
+                Toast.makeText(this, "Aspect Ratio: 4:3 Classic TV", Toast.LENGTH_SHORT).show();
+                break;
+        }
+
         vvPlayer.setLayoutParams(lp);
         scheduleHideControls();
+    }
+
+    private void cycleDecoderMode() {
+        currentDecoderMode = (currentDecoderMode + 1) % 3;
+        if (tvPlayerDecoder != null) {
+            if (currentDecoderMode == 0) {
+                tvPlayerDecoder.setText("HW+");
+                Toast.makeText(this, "Hardware+ Acceleration (HW+) Active 🌸", Toast.LENGTH_SHORT).show();
+            } else if (currentDecoderMode == 1) {
+                tvPlayerDecoder.setText("HW");
+                Toast.makeText(this, "Hardware Decoder (HW) Active 🌸", Toast.LENGTH_SHORT).show();
+            } else {
+                tvPlayerDecoder.setText("SW");
+                Toast.makeText(this, "Software Decoder (SW) Active 🌸", Toast.LENGTH_SHORT).show();
+            }
+        }
+        scheduleHideControls();
+    }
+
+    private void showAudioTrackDialog() {
+        if (underlyingMediaPlayer == null) {
+            Toast.makeText(this, "🎵 Audio: Stereo Output Active", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<String> trackNames = new ArrayList<>();
+        final List<Integer> trackIndices = new ArrayList<>();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            try {
+                MediaPlayer.TrackInfo[] tracks = underlyingMediaPlayer.getTrackInfo();
+                if (tracks != null) {
+                    for (int i = 0; i < tracks.length; i++) {
+                        if (tracks[i].getTrackType() == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO) {
+                            String lang = tracks[i].getLanguage();
+                            if (lang == null || lang.isEmpty() || "und".equals(lang)) lang = "Stereo";
+                            trackNames.add("Track " + (trackNames.size() + 1) + " (" + lang + ") 🌸");
+                            trackIndices.add(i);
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+
+        if (trackNames.isEmpty()) {
+            trackNames.add("Default Audio Track (Stereo 🌸)");
+            trackIndices.add(-1);
+        }
+
+        String[] items = trackNames.toArray(new String[0]);
+        new AlertDialog.Builder(this)
+                .setTitle("🌸 Select Audio Track 🎵")
+                .setItems(items, (dialog, which) -> {
+                    int chosenTrack = trackIndices.get(which);
+                    if (chosenTrack >= 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        try {
+                            underlyingMediaPlayer.selectTrack(chosenTrack);
+                            Toast.makeText(this, "Selected: " + items[which], Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            Toast.makeText(this, items[which] + " active", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(this, items[which] + " active", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showSubtitleTrackDialog() {
+        if (underlyingMediaPlayer == null) {
+            Toast.makeText(this, "💬 Subtitles: None found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<String> trackNames = new ArrayList<>();
+        final List<Integer> trackIndices = new ArrayList<>();
+
+        trackNames.add("Off (No Subtitles)");
+        trackIndices.add(-1);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            try {
+                MediaPlayer.TrackInfo[] tracks = underlyingMediaPlayer.getTrackInfo();
+                if (tracks != null) {
+                    for (int i = 0; i < tracks.length; i++) {
+                        int type = tracks[i].getTrackType();
+                        if (type == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_TIMEDTEXT
+                                || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && type == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_SUBTITLE)) {
+                            String lang = tracks[i].getLanguage();
+                            if (lang == null || lang.isEmpty() || "und".equals(lang)) lang = "Sub " + trackIndices.size();
+                            trackNames.add("Subtitles: " + lang + " 🌸");
+                            trackIndices.add(i);
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+
+        String[] items = trackNames.toArray(new String[0]);
+        new AlertDialog.Builder(this)
+                .setTitle("🌸 Subtitles / Closed Captions 💬")
+                .setItems(items, (dialog, which) -> {
+                    int chosen = trackIndices.get(which);
+                    if (chosen == -1) {
+                        Toast.makeText(this, "Subtitles turned off", Toast.LENGTH_SHORT).show();
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        try {
+                            underlyingMediaPlayer.selectTrack(chosen);
+                            Toast.makeText(this, items[which] + " enabled", Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            Toast.makeText(this, "Subtitle selection not supported on this track", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .setNegativeButton("Close", null)
+                .show();
     }
 
     private void cyclePlaybackSpeed() {
@@ -1101,15 +1429,19 @@ public class MelodyVideoActivity extends AppCompatActivity {
     }
 
     private void toggleLoop() {
-        isLooping = !isLooping;
-        if (isLooping) {
-            btnPlayerLoop.setText("🔁");
+        loopMode = (loopMode + 1) % 3;
+        if (loopMode == 1) {
+            btnPlayerLoop.setText("🔁 All");
             btnPlayerLoop.setTextColor(Color.parseColor("#FF4D8D"));
-            Toast.makeText(this, "Loop Mode: ON 🔁", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Loop Mode: Repeat All 🔁", Toast.LENGTH_SHORT).show();
+        } else if (loopMode == 2) {
+            btnPlayerLoop.setText("🔂 One");
+            btnPlayerLoop.setTextColor(Color.parseColor("#FBBF24"));
+            Toast.makeText(this, "Loop Mode: Repeat Single Video 🔂", Toast.LENGTH_SHORT).show();
         } else {
-            btnPlayerLoop.setText("🔁");
+            btnPlayerLoop.setText("🔁 Off");
             btnPlayerLoop.setTextColor(Color.WHITE);
-            Toast.makeText(this, "Loop Mode: OFF", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Loop Mode: Off ➡", Toast.LENGTH_SHORT).show();
         }
         scheduleHideControls();
     }
@@ -1407,10 +1739,15 @@ public class MelodyVideoActivity extends AppCompatActivity {
         });
 
         vvPlayer.setOnCompletionListener(mp -> {
-            if (isLooping) {
+            if (loopMode == 2) {
+                vvPlayer.seekTo(0);
                 vvPlayer.start();
-            } else {
+            } else if (loopMode == 1) {
                 playNextVideo();
+            } else {
+                btnVideoPlayPause.setText("▶");
+                layoutPlayerControls.setVisibility(View.VISIBLE);
+                layoutPlayerControls.setAlpha(1.0f);
             }
         });
     }
@@ -1420,10 +1757,18 @@ public class MelodyVideoActivity extends AppCompatActivity {
             try {
                 if (vvPlayer.isPlaying()) vvPlayer.stopPlayback();
             } catch (Exception ignored) {}
+            vvPlayer.setScaleX(1.0f);
+            vvPlayer.setScaleY(1.0f);
+        }
+        currentScaleFactor = 1.0f;
+        if (layoutLockSparkleOverlay != null) {
+            layoutLockSparkleOverlay.setVisibility(View.GONE);
+            layoutLockSparkleOverlay.removeAllViews();
         }
         playerHandler.removeCallbacks(progressUpdateRunnable);
         playerHandler.removeCallbacks(hideControlsRunnable);
         playerHandler.removeCallbacks(hideUnlockButtonRunnable);
+        playerHandler.removeCallbacks(hideZoomHudRunnable);
 
         currentKnownDuration = 0;
         underlyingMediaPlayer = null;

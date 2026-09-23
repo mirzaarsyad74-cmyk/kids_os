@@ -20,13 +20,20 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.bluetooth.BluetoothAdapter;
+import android.content.pm.ActivityInfo;
+import android.hardware.camera2.CameraManager;
+import android.location.LocationManager;
 import android.media.AudioManager;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.content.ComponentName;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
@@ -113,6 +120,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SeekBar sbVolume;
     private TextView tvNotifBatteryText;
     private TextView tvNotifTimeText;
+
+    // Quick Setting Tiles
+    private LinearLayout layoutQuickWifi;
+    private TextView tvQuickWifiIcon, tvQuickWifiLabel;
+    private LinearLayout layoutQuickBluetooth;
+    private TextView tvQuickBtIcon, tvQuickBtLabel;
+    private LinearLayout layoutQuickGps;
+    private TextView tvQuickGpsIcon, tvQuickGpsLabel;
+    private LinearLayout layoutQuickTorch;
+    private TextView tvQuickTorchIcon, tvQuickTorchLabel;
+    private LinearLayout layoutQuickScreenshot;
+    private TextView tvQuickScreenshotIcon, tvQuickScreenshotLabel;
+    private LinearLayout layoutQuickRotation;
+    private TextView tvQuickRotationIcon, tvQuickRotationLabel;
+    private boolean isTorchOn = false;
+    private float touchDownY = 0f;
+    private float touchDownX = 0f;
 
     private RecyclerView rvKidsApps;
     private TextView chipAll, chipGames, chipCreative, chipMedia, chipLearning;
@@ -304,6 +328,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (btnVolumeQuick != null) btnVolumeQuick.setOnClickListener(v -> showVolumeHud(getCurrentVolumePercent()));
         if (btnNotificationBell != null) btnNotificationBell.setOnClickListener(v -> toggleControlCenter(true));
+        if (ivWifiStatus != null) ivWifiStatus.setOnClickListener(v -> toggleControlCenter(true));
         if (layoutBatteryCapsule != null) {
             layoutBatteryCapsule.setOnClickListener(v -> {
                 startActivity(new Intent(MainActivity.this, MelodyBatteryActivity.class));
@@ -344,6 +369,109 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void setupControlCenter() {
+        // Quick Settings Tiles
+        layoutQuickWifi = findViewById(R.id.layout_quick_wifi);
+        tvQuickWifiIcon = findViewById(R.id.tv_quick_wifi_icon);
+        tvQuickWifiLabel = findViewById(R.id.tv_quick_wifi_label);
+
+        layoutQuickBluetooth = findViewById(R.id.layout_quick_bluetooth);
+        tvQuickBtIcon = findViewById(R.id.tv_quick_bt_icon);
+        tvQuickBtLabel = findViewById(R.id.tv_quick_bt_label);
+
+        layoutQuickGps = findViewById(R.id.layout_quick_gps);
+        tvQuickGpsIcon = findViewById(R.id.tv_quick_gps_icon);
+        tvQuickGpsLabel = findViewById(R.id.tv_quick_gps_label);
+
+        layoutQuickTorch = findViewById(R.id.layout_quick_torch);
+        tvQuickTorchIcon = findViewById(R.id.tv_quick_torch_icon);
+        tvQuickTorchLabel = findViewById(R.id.tv_quick_torch_label);
+
+        layoutQuickScreenshot = findViewById(R.id.layout_quick_screenshot);
+        tvQuickScreenshotIcon = findViewById(R.id.tv_quick_screenshot_icon);
+        tvQuickScreenshotLabel = findViewById(R.id.tv_quick_screenshot_label);
+
+        layoutQuickRotation = findViewById(R.id.layout_quick_rotation);
+        tvQuickRotationIcon = findViewById(R.id.tv_quick_rotation_icon);
+        tvQuickRotationLabel = findViewById(R.id.tv_quick_rotation_label);
+
+        if (layoutQuickWifi != null) {
+            layoutQuickWifi.setOnClickListener(v -> {
+                try {
+                    WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                    if (wm != null) {
+                        boolean next = !wm.isWifiEnabled();
+                        wm.setWifiEnabled(next);
+                        Toast.makeText(this, next ? "Wi-Fi Enabled 🌸" : "Wi-Fi Disabled", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e) {
+                    try { startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)); } catch (Exception ignored) {}
+                }
+                new Handler(Looper.getMainLooper()).postDelayed(this::updateQuickTilesUi, 500);
+            });
+        }
+
+        if (layoutQuickBluetooth != null) {
+            layoutQuickBluetooth.setOnClickListener(v -> {
+                try {
+                    BluetoothAdapter ba = BluetoothAdapter.getDefaultAdapter();
+                    if (ba != null) {
+                        if (ba.isEnabled()) {
+                            ba.disable();
+                            Toast.makeText(this, "Bluetooth Disabled", Toast.LENGTH_SHORT).show();
+                        } else {
+                            ba.enable();
+                            Toast.makeText(this, "Bluetooth Enabled 🌸", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                } catch (Exception e) {
+                    try { startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS)); } catch (Exception ignored) {}
+                }
+                new Handler(Looper.getMainLooper()).postDelayed(this::updateQuickTilesUi, 500);
+            });
+        }
+
+        if (layoutQuickGps != null) {
+            layoutQuickGps.setOnClickListener(v -> {
+                try {
+                    startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                } catch (Exception ignored) {}
+            });
+        }
+
+        if (layoutQuickTorch != null) {
+            layoutQuickTorch.setOnClickListener(v -> {
+                toggleFlashlight();
+                updateQuickTilesUi();
+            });
+        }
+
+        if (layoutQuickScreenshot != null) {
+            layoutQuickScreenshot.setOnClickListener(v -> {
+                toggleControlCenter(false);
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    if (MelodyGlobalService.getInstance() != null) {
+                        MelodyGlobalService.getInstance().takeGlobalScreenshot();
+                    } else {
+                        Toast.makeText(this, "Screenshot captured 📸", Toast.LENGTH_SHORT).show();
+                    }
+                }, 400);
+            });
+        }
+
+        if (layoutQuickRotation != null) {
+            layoutQuickRotation.setOnClickListener(v -> {
+                int cur = getRequestedOrientation();
+                if (cur == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                    Toast.makeText(this, "Orientation: Locked Landscape 🔒", Toast.LENGTH_SHORT).show();
+                } else {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+                    Toast.makeText(this, "Orientation: Auto-Rotate (Landscape) 🔄", Toast.LENGTH_SHORT).show();
+                }
+                updateQuickTilesUi();
+            });
+        }
+
         // Volume Slider
         if (audioManager != null) {
             int max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
@@ -402,6 +530,87 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Toast.makeText(this, "🚀 Speed Boosted! Cleared background memory ✨", Toast.LENGTH_SHORT).show();
             });
         }
+
+        updateQuickTilesUi();
+    }
+
+    private void updateQuickTilesUi() {
+        // Wi-Fi
+        try {
+            WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            boolean isWifiOn = wm != null && wm.isWifiEnabled();
+            if (layoutQuickWifi != null) {
+                layoutQuickWifi.setBackgroundResource(isWifiOn ? R.drawable.bg_melody_quick_tile_active : R.drawable.bg_melody_quick_tile_inactive);
+            }
+            if (tvQuickWifiLabel != null) {
+                tvQuickWifiLabel.setText(isWifiOn ? "Wi-Fi ON" : "Wi-Fi");
+                tvQuickWifiLabel.setTextColor(isWifiOn ? Color.WHITE : Color.parseColor("#831843"));
+            }
+        } catch (Exception ignored) {}
+
+        // Bluetooth
+        try {
+            BluetoothAdapter ba = BluetoothAdapter.getDefaultAdapter();
+            boolean isBtOn = ba != null && ba.isEnabled();
+            if (layoutQuickBluetooth != null) {
+                layoutQuickBluetooth.setBackgroundResource(isBtOn ? R.drawable.bg_melody_quick_tile_active : R.drawable.bg_melody_quick_tile_inactive);
+            }
+            if (tvQuickBtLabel != null) {
+                tvQuickBtLabel.setText(isBtOn ? "Bluetooth ON" : "Bluetooth");
+                tvQuickBtLabel.setTextColor(isBtOn ? Color.WHITE : Color.parseColor("#831843"));
+            }
+        } catch (Exception ignored) {}
+
+        // Location / GPS
+        try {
+            LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            boolean isGpsOn = lm != null && lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            if (layoutQuickGps != null) {
+                layoutQuickGps.setBackgroundResource(isGpsOn ? R.drawable.bg_melody_quick_tile_active : R.drawable.bg_melody_quick_tile_inactive);
+            }
+            if (tvQuickGpsLabel != null) {
+                tvQuickGpsLabel.setText(isGpsOn ? "Location ON" : "Location");
+                tvQuickGpsLabel.setTextColor(isGpsOn ? Color.WHITE : Color.parseColor("#831843"));
+            }
+        } catch (Exception ignored) {}
+
+        // Torch
+        if (layoutQuickTorch != null) {
+            layoutQuickTorch.setBackgroundResource(isTorchOn ? R.drawable.bg_melody_quick_tile_active : R.drawable.bg_melody_quick_tile_inactive);
+        }
+        if (tvQuickTorchLabel != null) {
+            tvQuickTorchLabel.setText(isTorchOn ? "Torch ON" : "Flashlight");
+            tvQuickTorchLabel.setTextColor(isTorchOn ? Color.WHITE : Color.parseColor("#831843"));
+        }
+
+        // Screen Rotation
+        int orient = getRequestedOrientation();
+        boolean isAutoRotate = (orient == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+        if (layoutQuickRotation != null) {
+            layoutQuickRotation.setBackgroundResource(isAutoRotate ? R.drawable.bg_melody_quick_tile_active : R.drawable.bg_melody_quick_tile_inactive);
+        }
+        if (tvQuickRotationLabel != null) {
+            tvQuickRotationLabel.setText(isAutoRotate ? "Auto-Rotate" : "Locked");
+            tvQuickRotationLabel.setTextColor(isAutoRotate ? Color.WHITE : Color.parseColor("#831843"));
+        }
+    }
+
+    private void toggleFlashlight() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                CameraManager cm = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+                if (cm != null) {
+                    String[] ids = cm.getCameraIdList();
+                    if (ids != null && ids.length > 0) {
+                        isTorchOn = !isTorchOn;
+                        cm.setTorchMode(ids[0], isTorchOn);
+                        Toast.makeText(this, isTorchOn ? "Flashlight ON 🔦" : "Flashlight OFF", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+        Toast.makeText(this, "Flashlight not supported on this device", Toast.LENGTH_SHORT).show();
     }
 
     private void updateAutoBrightnessUi() {
@@ -466,6 +675,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void toggleControlCenter(boolean show) {
         layoutControlCenterContainer.setVisibility(show ? View.VISIBLE : View.GONE);
         if (show) {
+            updateQuickTilesUi();
             if (viewNotificationDot != null) viewNotificationDot.setVisibility(View.GONE);
             int remainingSecs = prefs.getRemainingSeconds();
             if (prefs.getTimeLimitMinutes() <= 0) {
@@ -1043,6 +1253,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
         scheduleNavBarAutoHide();
+        switch (ev.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                touchDownY = ev.getRawY();
+                touchDownX = ev.getRawX();
+                break;
+            case MotionEvent.ACTION_UP:
+                float deltaY = ev.getRawY() - touchDownY;
+                float deltaX = Math.abs(ev.getRawX() - touchDownX);
+                if (touchDownY < 120 && deltaY > 80 && deltaY > deltaX * 1.3f) {
+                    toggleControlCenter(true);
+                    return true;
+                }
+                break;
+        }
         return super.dispatchTouchEvent(ev);
     }
 
