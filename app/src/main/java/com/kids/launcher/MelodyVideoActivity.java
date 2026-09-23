@@ -215,6 +215,10 @@ public class MelodyVideoActivity extends AppCompatActivity {
         }
     };
 
+    private final Runnable seekCompleteFallbackRunnable = () -> {
+        isPlayerSeeking = false;
+    };
+
     private final Runnable hideUnlockButtonRunnable = () -> {
         if (btnPlayerUnlock != null && isScreenLocked) {
             btnPlayerUnlock.animate().alpha(0.35f).setDuration(400).start();
@@ -444,9 +448,12 @@ public class MelodyVideoActivity extends AppCompatActivity {
             targetMs = Math.max(0, targetMs);
         }
 
+        isPlayerSeeking = true;
+        updateProgressUI(targetMs);
+
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && underlyingMediaPlayer != null) {
-                underlyingMediaPlayer.seekTo((long) targetMs, MediaPlayer.SEEK_CLOSEST);
+                underlyingMediaPlayer.seekTo((long) targetMs, MediaPlayer.SEEK_CLOSEST_SYNC);
             } else {
                 vvPlayer.seekTo(targetMs);
             }
@@ -455,7 +462,9 @@ public class MelodyVideoActivity extends AppCompatActivity {
                 vvPlayer.seekTo(targetMs);
             } catch (Exception ignored) {}
         }
-        updateProgressUI(targetMs);
+
+        playerHandler.removeCallbacks(seekCompleteFallbackRunnable);
+        playerHandler.postDelayed(seekCompleteFallbackRunnable, 800);
     }
 
     private void seekToTouch(MotionEvent event) {
@@ -706,35 +715,34 @@ public class MelodyVideoActivity extends AppCompatActivity {
 
         layoutPlayerControls.setOnClickListener(v -> toggleControls());
 
+        // Tap-to-jump on touch down without consuming move/up drag events
         sbPlayerProgress.setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    isPlayerSeeking = true;
-                    playerHandler.removeCallbacks(hideControlsRunnable);
-                    seekToTouch(event);
-                    return true;
-                case MotionEvent.ACTION_MOVE:
-                    seekToTouch(event);
-                    return true;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    seekToTouch(event);
-                    isPlayerSeeking = false;
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                isPlayerSeeking = true;
+                playerHandler.removeCallbacks(hideControlsRunnable);
+                playerHandler.removeCallbacks(seekCompleteFallbackRunnable);
+                int paddingLeft = sbPlayerProgress.getPaddingLeft();
+                int paddingRight = sbPlayerProgress.getPaddingRight();
+                int width = sbPlayerProgress.getWidth() - paddingLeft - paddingRight;
+                if (width > 0) {
+                    float x = event.getX() - paddingLeft;
+                    float ratio = Math.max(0f, Math.min(1f, x / (float) width));
+                    int progress = (int) (ratio * 1000);
+                    sbPlayerProgress.setProgress(progress);
                     int total = getCurrentTotalDuration();
                     if (total > 0) {
-                        int targetMs = (int) (((long) sbPlayerProgress.getProgress() * total) / 1000);
-                        performSeek(targetMs);
+                        int targetMs = (int) (ratio * total);
+                        tvPlayerCurrentTime.setText(formatTime(targetMs));
                     }
-                    scheduleHideControls();
-                    return true;
+                }
             }
-            return false;
+            return false; // MUST return false so SeekBar's built-in onTouchEvent handles thumb dragging!
         });
 
         sbPlayerProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser && vvPlayer != null) {
+                if (fromUser) {
                     int total = getCurrentTotalDuration();
                     if (total > 0) {
                         int targetMs = (int) (((long) progress * total) / 1000);
@@ -747,17 +755,17 @@ public class MelodyVideoActivity extends AppCompatActivity {
             public void onStartTrackingTouch(SeekBar seekBar) {
                 isPlayerSeeking = true;
                 playerHandler.removeCallbacks(hideControlsRunnable);
+                playerHandler.removeCallbacks(seekCompleteFallbackRunnable);
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                isPlayerSeeking = false;
-                if (vvPlayer != null) {
-                    int total = getCurrentTotalDuration();
-                    if (total > 0) {
-                        int targetMs = (int) (((long) seekBar.getProgress() * total) / 1000);
-                        performSeek(targetMs);
-                    }
+                int total = getCurrentTotalDuration();
+                if (total > 0) {
+                    int targetMs = (int) (((long) seekBar.getProgress() * total) / 1000);
+                    performSeek(targetMs);
+                } else {
+                    isPlayerSeeking = false;
                 }
                 scheduleHideControls();
             }
@@ -1364,6 +1372,9 @@ public class MelodyVideoActivity extends AppCompatActivity {
         vvPlayer.setOnPreparedListener(mp -> {
             underlyingMediaPlayer = mp;
             mp.setLooping(false);
+            mp.setOnSeekCompleteListener(mPlayer -> {
+                isPlayerSeeking = false;
+            });
 
             int mpDur = 0;
             try { mpDur = mp.getDuration(); } catch (Exception ignored) {}
