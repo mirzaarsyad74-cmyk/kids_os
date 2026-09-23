@@ -401,37 +401,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         tvQuickRotationIcon = findViewById(R.id.tv_quick_rotation_icon);
         tvQuickRotationLabel = findViewById(R.id.tv_quick_rotation_label);
 
-        if (layoutQuickWifi != null) {
-            layoutQuickWifi.setOnClickListener(v -> {
-                try {
-                    WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                    if (wm != null) {
-                        boolean current = wm.isWifiEnabled();
-                        boolean next = !current;
-
-                        layoutQuickWifi.setBackgroundResource(next ? R.drawable.bg_melody_quick_tile_active : R.drawable.bg_melody_quick_tile_inactive);
-                        if (tvQuickWifiLabel != null) {
-                            tvQuickWifiLabel.setText(next ? "Enabling..." : "Disabling...");
-                            tvQuickWifiLabel.setTextColor(next ? Color.WHITE : Color.parseColor("#831843"));
-                        }
-
-                        boolean ok = wm.setWifiEnabled(next);
-                        if (!ok) {
-                            try {
-                                Settings.Global.putInt(getContentResolver(), Settings.Global.WIFI_ON, next ? 1 : 0);
-                            } catch (Exception ignored) {}
-                            try {
-                                Runtime.getRuntime().exec("svc wifi " + (next ? "enable" : "disable"));
-                            } catch (Exception ignored) {}
-                        }
-                        Toast.makeText(this, next ? "Wi-Fi Enabled 🌸" : "Wi-Fi Disabled", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (Exception e) {
-                    android.util.Log.e("MainActivity", "Failed to toggle Wi-Fi", e);
-                }
-                new Handler(Looper.getMainLooper()).postDelayed(this::updateQuickTilesUi, 1000);
-            });
-        }
+        View.OnClickListener wifiClickListener = v -> toggleWifiState();
+        if (layoutQuickWifi != null) layoutQuickWifi.setOnClickListener(wifiClickListener);
+        if (tvQuickWifiIcon != null) tvQuickWifiIcon.setOnClickListener(wifiClickListener);
+        if (tvQuickWifiLabel != null) tvQuickWifiLabel.setOnClickListener(wifiClickListener);
 
         if (layoutQuickBluetooth != null) {
             layoutQuickBluetooth.setOnClickListener(v -> {
@@ -581,17 +554,51 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         updateQuickTilesUi();
     }
 
+    private void toggleWifiState() {
+        boolean currentlyOn = MelodyNetworkHelper.isWifiEnabled(this);
+        boolean next = !currentlyOn;
+        android.util.Log.i("MainActivity", "toggleWifiState called! currentlyOn=" + currentlyOn + " next=" + next);
+
+        if (layoutQuickWifi != null) {
+            layoutQuickWifi.setBackgroundResource(next ? R.drawable.bg_melody_quick_tile_active : R.drawable.bg_melody_quick_tile_inactive);
+        }
+        if (tvQuickWifiLabel != null) {
+            tvQuickWifiLabel.setText(next ? "Enabling..." : "Disabling...");
+            tvQuickWifiLabel.setTextColor(next ? Color.WHITE : Color.parseColor("#831843"));
+        }
+
+        MelodyNetworkHelper.setWifiEnabled(this, next);
+        Toast.makeText(this, next ? "Wi-Fi Enabling 🌸" : "Wi-Fi Disabling...", Toast.LENGTH_SHORT).show();
+
+        new Handler(Looper.getMainLooper()).postDelayed(this::updateQuickTilesUi, 1200);
+        new Handler(Looper.getMainLooper()).postDelayed(this::updateQuickTilesUi, 2500);
+    }
+
     private void updateQuickTilesUi() {
         // Wi-Fi
         try {
-            WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            boolean isWifiOn = wm != null && wm.isWifiEnabled();
+            int state = MelodyNetworkHelper.getWifiState(this);
+            boolean isWifiOn = (state == WifiManager.WIFI_STATE_ENABLED);
+            boolean isEnabling = (state == WifiManager.WIFI_STATE_ENABLING);
+            boolean isDisabling = (state == WifiManager.WIFI_STATE_DISABLING);
+
             if (layoutQuickWifi != null) {
-                layoutQuickWifi.setBackgroundResource(isWifiOn ? R.drawable.bg_melody_quick_tile_active : R.drawable.bg_melody_quick_tile_inactive);
+                layoutQuickWifi.setBackgroundResource((isWifiOn || isEnabling) ? R.drawable.bg_melody_quick_tile_active : R.drawable.bg_melody_quick_tile_inactive);
             }
             if (tvQuickWifiLabel != null) {
-                tvQuickWifiLabel.setText(isWifiOn ? "Wi-Fi ON" : "Wi-Fi");
-                tvQuickWifiLabel.setTextColor(isWifiOn ? Color.WHITE : Color.parseColor("#831843"));
+                if (isEnabling) {
+                    tvQuickWifiLabel.setText("Enabling...");
+                    tvQuickWifiLabel.setTextColor(Color.WHITE);
+                } else if (isDisabling) {
+                    tvQuickWifiLabel.setText("Disabling...");
+                    tvQuickWifiLabel.setTextColor(Color.parseColor("#831843"));
+                } else if (isWifiOn) {
+                    tvQuickWifiLabel.setText("Wi-Fi ON");
+                    tvQuickWifiLabel.setTextColor(Color.WHITE);
+                } else {
+                    tvQuickWifiLabel.setText("Wi-Fi");
+                    tvQuickWifiLabel.setTextColor(Color.parseColor("#831843"));
+                }
             }
         } catch (Exception ignored) {}
 
@@ -666,6 +673,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             btnAutoBrightnessToggle.setText("✨ Auto: ON");
             btnAutoBrightnessToggle.setBackgroundResource(R.drawable.bg_melody_chip_selected);
             btnAutoBrightnessToggle.setTextColor(Color.WHITE);
+            if (tvSurroundingLightStatus != null) {
+                CameraAmbientDetector detector = CameraAmbientDetector.getInstance(this);
+                float lux = detector.getLastKnownLux();
+                String desc = detector.getLastKnownDesc();
+                tvSurroundingLightStatus.setText("✨ Cam Light: " + desc + " (" + (int)lux + " lx)");
+            }
         } else {
             btnAutoBrightnessToggle.setText("Manual Mode");
             btnAutoBrightnessToggle.setBackgroundResource(R.drawable.bg_melody_card);
@@ -681,16 +694,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         prefs.setAutoBrightness(enabled);
         updateAutoBrightnessUi();
         if (enabled) {
+            CameraAmbientDetector.getInstance(this).start(this::onCameraAmbientUpdated);
             if (sensorManager != null && lightSensor != null) {
                 sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
             }
-            Toast.makeText(this, "Auto-Brightness enabled (Ambient Light)", Toast.LENGTH_SHORT).show();
+            float target = CameraAmbientDetector.getInstance(this).getLastKnownBrightness();
+            animateBrightnessTo(target);
+            Toast.makeText(this, "Auto-Brightness enabled (Ambient Cam Light) 🌸", Toast.LENGTH_SHORT).show();
         } else {
+            CameraAmbientDetector.getInstance(this).stop();
             if (sensorManager != null) {
                 sensorManager.unregisterListener(this);
             }
             Toast.makeText(this, "Manual brightness enabled", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void onCameraAmbientUpdated(float lux, String desc, float recommendedBrightness) {
+        if (!isAutoBrightness) return;
+        if (tvSurroundingLightStatus != null) {
+            tvSurroundingLightStatus.setText("✨ Cam Light: " + desc + " (" + (int) lux + " lx)");
+        }
+        animateBrightnessTo(recommendedBrightness);
     }
 
     private void animateBrightnessTo(float target) {
@@ -1351,12 +1376,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         isAutoBrightness = prefs.isAutoBrightness();
         updateAutoBrightnessUi();
         if (isAutoBrightness) {
+            CameraAmbientDetector.getInstance(this).start(this::onCameraAmbientUpdated);
             if (sensorManager != null && lightSensor != null) {
                 sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
             }
-            WindowManager.LayoutParams lp = getWindow().getAttributes();
-            lp.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
-            getWindow().setAttributes(lp);
+            float target = CameraAmbientDetector.getInstance(this).getLastKnownBrightness();
+            animateBrightnessTo(target);
         }
         updateQuickTilesUi();
         loadAllowedApps();
@@ -1401,6 +1426,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             MelodyGlobalService.getInstance().setFloatingBatteryVisible(true);
         }
 
+        CameraAmbientDetector.getInstance(this).stop();
         if (sensorManager != null) {
             sensorManager.unregisterListener(this);
         }
@@ -1755,6 +1781,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        CameraAmbientDetector.getInstance(this).stop();
         if (timerHandler != null && timerRunnable != null) {
             timerHandler.removeCallbacks(timerRunnable);
         }

@@ -889,19 +889,17 @@ public class MelodyGlobalService extends AccessibilityService {
 
         // 7. WiFi Toggle
         TextView tvWifiLabel = touchMenuView.findViewById(R.id.tv_action_wifi_label);
-        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if (wm != null && tvWifiLabel != null) {
-            tvWifiLabel.setText(wm.isWifiEnabled() ? "WiFi ON" : "WiFi OFF");
+        boolean currentWifi = MelodyNetworkHelper.isWifiEnabled(this);
+        if (tvWifiLabel != null) {
+            tvWifiLabel.setText(currentWifi ? "WiFi ON" : "WiFi OFF");
         }
         touchMenuView.findViewById(R.id.btn_action_wifi).setOnClickListener(v -> {
-            if (wm != null) {
-                boolean newState = !wm.isWifiEnabled();
-                wm.setWifiEnabled(newState);
-                if (tvWifiLabel != null) {
-                    tvWifiLabel.setText(newState ? "WiFi ON" : "WiFi OFF");
-                }
-                Toast.makeText(MelodyGlobalService.this, newState ? "📶 WiFi Turned ON" : "📴 WiFi Turned OFF", Toast.LENGTH_SHORT).show();
+            boolean nextWifi = !MelodyNetworkHelper.isWifiEnabled(this);
+            MelodyNetworkHelper.setWifiEnabled(this, nextWifi);
+            if (tvWifiLabel != null) {
+                tvWifiLabel.setText(nextWifi ? "WiFi ON" : "WiFi OFF");
             }
+            Toast.makeText(MelodyGlobalService.this, nextWifi ? "📶 WiFi Turning ON 🌸" : "📴 WiFi Turning OFF", Toast.LENGTH_SHORT).show();
         });
 
         // 8. Boost

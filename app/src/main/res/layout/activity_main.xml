@@ -373,7 +373,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="📶"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:duplicateParentState="true" />
 
                     <TextView
                         android:id="@+id/tv_quick_wifi_label"
@@ -382,7 +385,10 @@
                         android:text="Wi-Fi ON"
                         android:textColor="#FFFFFF"
                         android:textSize="10sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:duplicateParentState="true" />
                 </LinearLayout>
 
                 <!-- Bluetooth Tile -->
@@ -406,7 +412,10 @@
                         android:text="ᛒ"
                         android:textColor="#DB2777"
                         android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:duplicateParentState="true" />
 
                     <TextView
                         android:id="@+id/tv_quick_bt_label"
@@ -415,7 +424,10 @@
                         android:text="Bluetooth"
                         android:textColor="#831843"
                         android:textSize="10sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:duplicateParentState="true" />
                 </LinearLayout>
 
                 <!-- GPS / Location Tile -->
@@ -436,7 +448,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="📍"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:duplicateParentState="true" />
 
                     <TextView
                         android:id="@+id/tv_quick_gps_label"
@@ -445,7 +460,10 @@
                         android:text="Location"
                         android:textColor="#831843"
                         android:textSize="10sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:duplicateParentState="true" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -475,7 +493,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="🔦"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:duplicateParentState="true" />
 
                     <TextView
                         android:id="@+id/tv_quick_torch_label"
@@ -484,7 +505,10 @@
                         android:text="Flashlight"
                         android:textColor="#831843"
                         android:textSize="10sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:duplicateParentState="true" />
                 </LinearLayout>
 
                 <!-- Screenshot Tile -->
@@ -506,7 +530,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="📸"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:duplicateParentState="true" />
 
                     <TextView
                         android:id="@+id/tv_quick_screenshot_label"
@@ -515,7 +542,10 @@
                         android:text="Screenshot"
                         android:textColor="#831843"
                         android:textSize="10sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:duplicateParentState="true" />
                 </LinearLayout>
 
                 <!-- Screen Orientation / Auto-Rotate Tile -->
@@ -536,7 +566,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="🔄"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:duplicateParentState="true" />
 
                     <TextView
                         android:id="@+id/tv_quick_rotation_label"
@@ -545,7 +578,10 @@
                         android:text="Auto-Rotate"
                         android:textColor="#831843"
                         android:textSize="10sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:duplicateParentState="true" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -578,7 +614,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
-                    android:text="Camera Light: Detecting..."
+                    android:text="✨ Cam Light: Active"
                     android:textColor="#9D174D"
                     android:textSize="10.5sp"
                     android:singleLine="true" />
