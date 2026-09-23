@@ -10,6 +10,9 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.AudioManager;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.media.PlaybackParams;
 import android.media.ThumbnailUtils;
@@ -72,7 +75,7 @@ public class MelodyVideoActivity extends AppCompatActivity {
     public static class VideoItem {
         public final String title;
         public final String path;
-        public final long durationMs;
+        public long durationMs;
         public final long sizeBytes;
         public final long dateAdded;
 
@@ -218,6 +221,189 @@ public class MelodyVideoActivity extends AppCompatActivity {
         }
     };
 
+    private int currentKnownDuration = 0;
+
+    public static long extractVideoDurationMs(Context context, String path) {
+        if (path == null || path.isEmpty()) return 0;
+
+        // 1. Try MediaMetadataRetriever
+        try {
+            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+            try {
+                if (path.startsWith("content://")) {
+                    mmr.setDataSource(context, Uri.parse(path));
+                } else {
+                    File f = new File(path);
+                    if (f.exists()) {
+                        mmr.setDataSource(path);
+                    } else {
+                        mmr.setDataSource(context, Uri.parse(path));
+                    }
+                }
+                String durStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+                if (durStr != null) {
+                    long dur = Long.parseLong(durStr.trim());
+                    if (dur > 0) return dur;
+                }
+            } finally {
+                try { mmr.release(); } catch (Exception ignored) {}
+            }
+        } catch (Exception ignored) {}
+
+        // 2. Try MediaExtractor
+        try {
+            MediaExtractor extractor = new MediaExtractor();
+            try {
+                if (path.startsWith("content://")) {
+                    extractor.setDataSource(context, Uri.parse(path), null);
+                } else {
+                    extractor.setDataSource(path);
+                }
+                int count = extractor.getTrackCount();
+                for (int i = 0; i < count; i++) {
+                    MediaFormat format = extractor.getTrackFormat(i);
+                    if (format.containsKey(MediaFormat.KEY_DURATION)) {
+                        long durUs = format.getLong(MediaFormat.KEY_DURATION);
+                        if (durUs > 0) return durUs / 1000L;
+                    }
+                }
+            } finally {
+                try { extractor.release(); } catch (Exception ignored) {}
+            }
+        } catch (Exception ignored) {}
+
+        // 3. Fallback: Parse Fragmented MP4 (fMP4) or standard MP4 mvhd/tfdt directly
+        if (!path.startsWith("content://")) {
+            long parsed = parseMp4DurationDirectly(path);
+            if (parsed > 0) return parsed;
+        }
+
+        return 0;
+    }
+
+    private static long parseMp4DurationDirectly(String path) {
+        try {
+            File f = new File(path);
+            if (!f.exists() || f.length() < 64) return 0;
+
+            java.io.RandomAccessFile raf = new java.io.RandomAccessFile(f, "r");
+            try {
+                byte[] head = new byte[(int) Math.min(8192L, f.length())];
+                raf.readFully(head);
+
+                int mvhdPos = findSubarray(head, new byte[]{'m','v','h','d'});
+                if (mvhdPos != -1 && mvhdPos + 24 <= head.length) {
+                    int ver = head[mvhdPos + 4] & 0xFF;
+                    if (ver == 0 && mvhdPos + 24 <= head.length) {
+                        int timescale = readInt32(head, mvhdPos + 16);
+                        int duration = readInt32(head, mvhdPos + 20);
+                        if (timescale > 0 && duration > 0) {
+                            return ((long) duration * 1000L) / (long) timescale;
+                        }
+                    } else if (ver == 1 && mvhdPos + 36 <= head.length) {
+                        int timescale = readInt32(head, mvhdPos + 24);
+                        long duration = readInt64(head, mvhdPos + 28);
+                        if (timescale > 0 && duration > 0) {
+                            return (duration * 1000L) / (long) timescale;
+                        }
+                    }
+                }
+
+                // Fragmented MP4 (fMP4): Duration is 0 in mvhd.
+                java.util.Map<Integer, Integer> trackTimescales = new java.util.HashMap<>();
+                int pos = 0;
+                while (pos < head.length - 8) {
+                    int trakPos = findSubarray(head, new byte[]{'t','r','a','k'}, pos);
+                    if (trakPos == -1) break;
+                    int tkhdPos = findSubarray(head, new byte[]{'t','k','h','d'}, trakPos);
+                    int mdhdPos = findSubarray(head, new byte[]{'m','d','h','d'}, trakPos);
+                    if (tkhdPos != -1 && mdhdPos != -1 && tkhdPos < trakPos + 1024 && mdhdPos < trakPos + 1024) {
+                        int tkhdVer = head[tkhdPos + 4] & 0xFF;
+                        int tid = (tkhdVer == 0) ? readInt32(head, tkhdPos + 16) : readInt32(head, tkhdPos + 24);
+                        int mdhdVer = head[mdhdPos + 4] & 0xFF;
+                        int ts = (mdhdVer == 0) ? readInt32(head, mdhdPos + 16) : readInt32(head, mdhdPos + 24);
+                        if (tid > 0 && ts > 0) {
+                            trackTimescales.put(tid, ts);
+                        }
+                    }
+                    pos = trakPos + 4;
+                }
+
+                long tailSize = Math.min(1048576L, f.length());
+                raf.seek(f.length() - tailSize);
+                byte[] tail = new byte[(int) tailSize];
+                raf.readFully(tail);
+
+                long maxDurMs = 0;
+                pos = 0;
+                while (pos < tail.length - 8) {
+                    int tfhdPos = findSubarray(tail, new byte[]{'t','f','h','d'}, pos);
+                    if (tfhdPos == -1) break;
+                    int tid = readInt32(tail, tfhdPos + 8);
+                    int tfdtPos = findSubarray(tail, new byte[]{'t','f','d','t'}, tfhdPos);
+                    if (tfdtPos != -1 && tfdtPos - tfhdPos < 128) {
+                        int ver = tail[tfdtPos + 4] & 0xFF;
+                        long baseTime = (ver == 0) ? (readInt32(tail, tfdtPos + 8) & 0xFFFFFFFFL) : readInt64(tail, tfdtPos + 8);
+                        int ts = trackTimescales.containsKey(tid) ? trackTimescales.get(tid) : (trackTimescales.containsKey(1) ? trackTimescales.get(1) : 1000);
+                        if (ts > 0 && baseTime > 0) {
+                            long durMs = (baseTime * 1000L) / (long) ts;
+                            if (durMs > maxDurMs) {
+                                maxDurMs = durMs;
+                            }
+                        }
+                    }
+                    pos = tfhdPos + 4;
+                }
+
+                if (maxDurMs > 0) {
+                    return maxDurMs;
+                }
+            } finally {
+                raf.close();
+            }
+        } catch (Exception ignored) {}
+        return 0;
+    }
+
+    private static int findSubarray(byte[] src, byte[] pattern, int start) {
+        if (src == null || pattern == null || start >= src.length) return -1;
+        for (int i = Math.max(0, start); i <= src.length - pattern.length; i++) {
+            boolean match = true;
+            for (int j = 0; j < pattern.length; j++) {
+                if (src[i + j] != pattern[j]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) return i;
+        }
+        return -1;
+    }
+
+    private static int findSubarray(byte[] src, byte[] pattern) {
+        return findSubarray(src, pattern, 0);
+    }
+
+    private static int readInt32(byte[] b, int offset) {
+        if (offset + 4 > b.length) return 0;
+        return ((b[offset] & 0xFF) << 24)
+                | ((b[offset + 1] & 0xFF) << 16)
+                | ((b[offset + 2] & 0xFF) << 8)
+                | (b[offset + 3] & 0xFF);
+    }
+
+    private static long readInt64(byte[] b, int offset) {
+        if (offset + 8 > b.length) return 0;
+        return (((long) (b[offset] & 0xFF)) << 56)
+                | (((long) (b[offset + 1] & 0xFF)) << 48)
+                | (((long) (b[offset + 2] & 0xFF)) << 40)
+                | (((long) (b[offset + 3] & 0xFF)) << 32)
+                | (((long) (b[offset + 4] & 0xFF)) << 24)
+                | (((long) (b[offset + 5] & 0xFF)) << 16)
+                | (((long) (b[offset + 6] & 0xFF)) << 8)
+                | ((long) (b[offset + 7] & 0xFF));
+    }
+
     private int getCurrentTotalDuration() {
         int dur = 0;
         if (vvPlayer != null) {
@@ -225,10 +411,105 @@ public class MelodyVideoActivity extends AppCompatActivity {
                 dur = vvPlayer.getDuration();
             } catch (Exception ignored) {}
         }
-        if (dur <= 0 && currentVideoItem != null && currentVideoItem.durationMs > 0) {
-            dur = (int) currentVideoItem.durationMs;
+        if (dur > 0) {
+            currentKnownDuration = dur;
+            return dur;
         }
-        return Math.max(0, dur);
+        if (currentKnownDuration > 0) {
+            return currentKnownDuration;
+        }
+        if (currentVideoItem != null && currentVideoItem.durationMs > 0) {
+            currentKnownDuration = (int) currentVideoItem.durationMs;
+            return currentKnownDuration;
+        }
+        if (currentVideoItem != null) {
+            long extracted = extractVideoDurationMs(this, currentVideoItem.path);
+            if (extracted > 0) {
+                currentKnownDuration = (int) extracted;
+                currentVideoItem.durationMs = extracted;
+                return currentKnownDuration;
+            }
+        }
+        return 0;
+    }
+
+    private void performSeek(int targetMs) {
+        if (vvPlayer == null) return;
+        int total = getCurrentTotalDuration();
+        if (total > 0) {
+            targetMs = Math.max(0, Math.min(total, targetMs));
+        } else {
+            targetMs = Math.max(0, targetMs);
+        }
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && underlyingMediaPlayer != null) {
+                underlyingMediaPlayer.seekTo((long) targetMs, MediaPlayer.SEEK_CLOSEST);
+            } else {
+                vvPlayer.seekTo(targetMs);
+            }
+        } catch (Exception e) {
+            try {
+                vvPlayer.seekTo(targetMs);
+            } catch (Exception ignored) {}
+        }
+        updateProgressUI(targetMs);
+    }
+
+    private void seekToTouch(MotionEvent event) {
+        int paddingLeft = sbPlayerProgress.getPaddingLeft();
+        int paddingRight = sbPlayerProgress.getPaddingRight();
+        int width = sbPlayerProgress.getWidth() - paddingLeft - paddingRight;
+        if (width > 0) {
+            float x = event.getX() - paddingLeft;
+            float ratio = Math.max(0f, Math.min(1f, x / (float) width));
+            int progress = (int) (ratio * 1000);
+            sbPlayerProgress.setProgress(progress);
+            int total = getCurrentTotalDuration();
+            if (total > 0) {
+                int targetMs = (int) (ratio * total);
+                tvPlayerCurrentTime.setText(formatTime(targetMs));
+            }
+        }
+    }
+
+    private void setupFastSeekRepeat(View btn, boolean isForward) {
+        btn.setOnTouchListener(new View.OnTouchListener() {
+            private final Handler repeatHandler = new Handler(Looper.getMainLooper());
+            private boolean isLongPressed = false;
+            private final Runnable repeatRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (isForward) {
+                        forward10s();
+                    } else {
+                        rewind10s();
+                    }
+                    repeatHandler.postDelayed(this, 350);
+                }
+            };
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        isLongPressed = false;
+                        repeatHandler.postDelayed(() -> {
+                            isLongPressed = true;
+                            repeatHandler.post(repeatRunnable);
+                        }, 400);
+                        return false;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        repeatHandler.removeCallbacksAndMessages(null);
+                        if (isLongPressed) {
+                            return true;
+                        }
+                        return false;
+                }
+                return false;
+            }
+        });
     }
 
     private void updateProgressUI(int currentMs) {
@@ -406,6 +687,8 @@ public class MelodyVideoActivity extends AppCompatActivity {
         btnVideoPlayPause.setOnClickListener(v -> togglePlayPause());
         btnVideoRewind.setOnClickListener(v -> rewind10s());
         btnVideoForward.setOnClickListener(v -> forward10s());
+        setupFastSeekRepeat(btnVideoForward, true);
+        setupFastSeekRepeat(btnVideoRewind, false);
 
         btnVideoNext.setOnClickListener(v -> playNextVideo());
         btnVideoPrev.setOnClickListener(v -> playPrevVideo());
@@ -420,6 +703,31 @@ public class MelodyVideoActivity extends AppCompatActivity {
         btnPlayerRotate.setOnClickListener(v -> toggleOrientation());
 
         layoutPlayerControls.setOnClickListener(v -> toggleControls());
+
+        sbPlayerProgress.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    isPlayerSeeking = true;
+                    playerHandler.removeCallbacks(hideControlsRunnable);
+                    seekToTouch(event);
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    seekToTouch(event);
+                    return true;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    seekToTouch(event);
+                    isPlayerSeeking = false;
+                    int total = getCurrentTotalDuration();
+                    if (total > 0) {
+                        int targetMs = (int) (((long) sbPlayerProgress.getProgress() * total) / 1000);
+                        performSeek(targetMs);
+                    }
+                    scheduleHideControls();
+                    return true;
+            }
+            return false;
+        });
 
         sbPlayerProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -446,8 +754,7 @@ public class MelodyVideoActivity extends AppCompatActivity {
                     int total = getCurrentTotalDuration();
                     if (total > 0) {
                         int targetMs = (int) (((long) seekBar.getProgress() * total) / 1000);
-                        vvPlayer.seekTo(targetMs);
-                        updateProgressUI(targetMs);
+                        performSeek(targetMs);
                     }
                 }
                 scheduleHideControls();
@@ -554,7 +861,7 @@ public class MelodyVideoActivity extends AppCompatActivity {
                     } else if (isSwipeHorizontal) {
                         // Seek swipe preview
                         if (vvPlayer != null) {
-                            int totalDuration = vvPlayer.getDuration();
+                            int totalDuration = getCurrentTotalDuration();
                             if (totalDuration > 0) {
                                 float seekPercent = deltaX / (float) width;
                                 long maxSeekSpan = Math.min(180000, Math.max(60000, totalDuration / 3));
@@ -569,9 +876,7 @@ public class MelodyVideoActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
                     if (isSwipeHorizontal) {
-                        if (vvPlayer != null && vvPlayer.getDuration() > 0) {
-                            vvPlayer.seekTo(targetSeekPositionMs);
-                        }
+                        performSeek(targetSeekPositionMs);
                         playerHandler.postDelayed(() -> {
                             if (layoutHudSeek != null) layoutHudSeek.setVisibility(View.GONE);
                         }, 500);
@@ -680,8 +985,7 @@ public class MelodyVideoActivity extends AppCompatActivity {
         if (vvPlayer == null) return;
         int cur = vvPlayer.getCurrentPosition();
         int target = Math.max(0, cur - 10000);
-        vvPlayer.seekTo(target);
-        updateProgressUI(target);
+        performSeek(target);
         showDoubleTapHud(false);
         scheduleHideControls();
     }
@@ -691,8 +995,7 @@ public class MelodyVideoActivity extends AppCompatActivity {
         int cur = vvPlayer.getCurrentPosition();
         int total = getCurrentTotalDuration();
         int target = (total > 0) ? Math.min(total, cur + 10000) : (cur + 10000);
-        vvPlayer.seekTo(target);
-        updateProgressUI(target);
+        performSeek(target);
         showDoubleTapHud(true);
         scheduleHideControls();
     }
@@ -808,47 +1111,55 @@ public class MelodyVideoActivity extends AppCompatActivity {
     }
 
     private void playNextVideo() {
-        List<VideoItem> list = !displayedVideos.isEmpty() ? displayedVideos : allVideos;
-        if (list.isEmpty()) {
+        List<VideoItem> list = (displayedVideos != null && !displayedVideos.isEmpty()) ? displayedVideos : allVideos;
+        if (list == null || list.isEmpty()) {
             Toast.makeText(this, "No videos available 🌸", Toast.LENGTH_SHORT).show();
             return;
+        }
+
+        int currIdx = currentPlayingIndex;
+        if (currIdx < 0 && currentVideoItem != null) {
+            currIdx = findVideoIndex(currentVideoItem.path, list);
+        }
+        if (currIdx < 0 && currentVideoItem != null) {
+            currIdx = findVideoIndex(currentVideoItem.path, allVideos);
+            if (currIdx >= 0) list = allVideos;
         }
 
         int nextIndex = 0;
-        if (currentPlayingIndex >= 0) {
-            nextIndex = (currentPlayingIndex + 1) % list.size();
-        } else if (currentVideoItem != null) {
-            int found = findVideoIndex(currentVideoItem.path, list);
-            if (found >= 0) {
-                nextIndex = (found + 1) % list.size();
-            }
+        if (currIdx >= 0) {
+            nextIndex = (currIdx + 1) % list.size();
         }
-        playVideo(list.get(nextIndex));
+        VideoItem nextItem = list.get(nextIndex);
+        Toast.makeText(this, "⏭ " + nextItem.title, Toast.LENGTH_SHORT).show();
+        playVideo(nextItem);
+        scheduleHideControls();
     }
 
     private void playPrevVideo() {
-        List<VideoItem> list = !displayedVideos.isEmpty() ? displayedVideos : allVideos;
-        if (list.isEmpty()) {
+        List<VideoItem> list = (displayedVideos != null && !displayedVideos.isEmpty()) ? displayedVideos : allVideos;
+        if (list == null || list.isEmpty()) {
             Toast.makeText(this, "No videos available 🌸", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (vvPlayer != null && vvPlayer.getCurrentPosition() > 3000) {
-            vvPlayer.seekTo(0);
-            updateProgressUI(0);
-            return;
+        int currIdx = currentPlayingIndex;
+        if (currIdx < 0 && currentVideoItem != null) {
+            currIdx = findVideoIndex(currentVideoItem.path, list);
+        }
+        if (currIdx < 0 && currentVideoItem != null) {
+            currIdx = findVideoIndex(currentVideoItem.path, allVideos);
+            if (currIdx >= 0) list = allVideos;
         }
 
         int prevIndex = list.size() - 1;
-        if (currentPlayingIndex >= 0) {
-            prevIndex = (currentPlayingIndex - 1 + list.size()) % list.size();
-        } else if (currentVideoItem != null) {
-            int found = findVideoIndex(currentVideoItem.path, list);
-            if (found >= 0) {
-                prevIndex = (found - 1 + list.size()) % list.size();
-            }
+        if (currIdx >= 0) {
+            prevIndex = (currIdx - 1 + list.size()) % list.size();
         }
-        playVideo(list.get(prevIndex));
+        VideoItem prevItem = list.get(prevIndex);
+        Toast.makeText(this, "⏮ " + prevItem.title, Toast.LENGTH_SHORT).show();
+        playVideo(prevItem);
+        scheduleHideControls();
     }
 
     private void setupSearch() {
@@ -1019,20 +1330,52 @@ public class MelodyVideoActivity extends AppCompatActivity {
         btnVideoPlayPause.setText("⏸");
         sbPlayerProgress.setProgress(0);
         tvPlayerCurrentTime.setText("00:00");
-        int initialTotal = item.durationMs > 0 ? (int) item.durationMs : 0;
-        tvPlayerTotalTime.setText(formatTime(initialTotal));
+
+        if (item.durationMs <= 0) {
+            long extracted = extractVideoDurationMs(this, item.path);
+            if (extracted > 0) {
+                item.durationMs = extracted;
+            }
+        }
+        currentKnownDuration = (int) item.durationMs;
+        tvPlayerTotalTime.setText(formatTime(currentKnownDuration));
 
         playerHandler.removeCallbacks(progressUpdateRunnable);
 
-        vvPlayer.setVideoPath(item.path);
+        try {
+            if (vvPlayer.isPlaying()) {
+                vvPlayer.stopPlayback();
+            }
+        } catch (Exception ignored) {}
+
+        File f = new File(item.path);
+        if (f.exists()) {
+            vvPlayer.setVideoURI(Uri.fromFile(f));
+        } else {
+            vvPlayer.setVideoPath(item.path);
+        }
+
         vvPlayer.setOnPreparedListener(mp -> {
             underlyingMediaPlayer = mp;
             mp.setLooping(false);
 
-            // Apply playback speed
+            int mpDur = 0;
+            try { mpDur = mp.getDuration(); } catch (Exception ignored) {}
+            if (mpDur > 0) {
+                currentKnownDuration = mpDur;
+                item.durationMs = mpDur;
+            } else if (currentKnownDuration <= 0) {
+                long extracted = extractVideoDurationMs(this, item.path);
+                if (extracted > 0) {
+                    currentKnownDuration = (int) extracted;
+                    item.durationMs = extracted;
+                }
+            }
+
+            // Apply playback speed safely
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 try {
-                    PlaybackParams params = mp.getPlaybackParams();
+                    PlaybackParams params = new PlaybackParams();
                     params.setSpeed(PLAYBACK_SPEEDS[currentSpeedIndex]);
                     mp.setPlaybackParams(params);
                 } catch (Exception ignored) {}
@@ -1065,6 +1408,9 @@ public class MelodyVideoActivity extends AppCompatActivity {
         playerHandler.removeCallbacks(hideControlsRunnable);
         playerHandler.removeCallbacks(hideUnlockButtonRunnable);
 
+        currentKnownDuration = 0;
+        underlyingMediaPlayer = null;
+        isPlayerSeeking = false;
         isScreenLocked = false;
         layoutPlayerContainer.setVisibility(View.GONE);
         layoutGalleryView.setVisibility(View.VISIBLE);
@@ -1151,6 +1497,13 @@ public class MelodyVideoActivity extends AppCompatActivity {
 
             new Thread(() -> {
                 try {
+                    if (item.durationMs <= 0) {
+                        long d = extractVideoDurationMs(MelodyVideoActivity.this, item.path);
+                        if (d > 0) {
+                            item.durationMs = d;
+                            holder.tvDuration.post(() -> holder.tvDuration.setText(item.getFormattedDuration()));
+                        }
+                    }
                     Bitmap thumb = ThumbnailUtils.createVideoThumbnail(item.path, MediaStore.Images.Thumbnails.MINI_KIND);
                     if (thumb != null) {
                         holder.ivThumb.post(() -> holder.ivThumb.setImageBitmap(thumb));
