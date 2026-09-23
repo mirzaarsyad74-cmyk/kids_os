@@ -101,6 +101,9 @@ public class MelodyGlobalService extends AccessibilityService {
         return instance;
     }
 
+    // In-App Purchase Blocker: cooldown to prevent toast spam
+    private long lastIapBlockTime = 0;
+
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         if (isPendingAutoInstall) {
@@ -113,6 +116,20 @@ public class MelodyGlobalService extends AccessibilityService {
             if (pkg != null) {
                 String pkgStr = pkg.toString();
                 String clsStr = cls != null ? cls.toString() : "";
+
+                // ── In-App Purchase Blocker ──
+                // Block Google Play billing/purchase dialogs instantly
+                if ("com.android.vending".equals(pkgStr) && isPlayBillingWindow(clsStr)) {
+                    performGlobalAction(GLOBAL_ACTION_BACK);
+                    long now = System.currentTimeMillis();
+                    if (now - lastIapBlockTime > 3000) {
+                        lastIapBlockTime = now;
+                        Toast.makeText(this,
+                                "🌸 Purchases are blocked! Ask a parent for help 💕",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    return;
+                }
 
                 if ("com.android.systemui".equals(pkgStr)) {
                     // Lock down stock Android Notification Panel and Quick Settings completely
@@ -236,6 +253,23 @@ public class MelodyGlobalService extends AccessibilityService {
         }
 
         return false;
+    }
+
+    /**
+     * Detects Google Play Store billing/purchase windows.
+     * Matches known Finsky purchase flow activities and any billing-related class names.
+     */
+    private boolean isPlayBillingWindow(String className) {
+        if (className == null || className.isEmpty()) return false;
+        String lower = className.toLowerCase();
+        // Google Play billing flow activities (Finsky = Play Store internal codename)
+        return lower.contains("purchase")
+                || lower.contains("billing")
+                || lower.contains("subscribe")
+                || lower.contains("lightpurchaseflow")
+                || lower.contains("acquisitionactivity")
+                || lower.contains("paymentflow")
+                || lower.contains("finsky.activities.buy");
     }
 
     @Override
