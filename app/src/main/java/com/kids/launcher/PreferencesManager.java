@@ -37,6 +37,18 @@ public class PreferencesManager {
     private static final String KEY_AUTO_BRIGHTNESS = "auto_brightness_enabled";
 
     private final SharedPreferences prefs;
+    private static volatile PreferencesManager sInstance;
+
+    public static PreferencesManager getInstance(Context context) {
+        if (sInstance == null) {
+            synchronized (PreferencesManager.class) {
+                if (sInstance == null) {
+                    sInstance = new PreferencesManager(context.getApplicationContext());
+                }
+            }
+        }
+        return sInstance;
+    }
 
     public PreferencesManager(Context context) {
         prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -563,5 +575,21 @@ public class PreferencesManager {
 
     public void setVolumeCapPercent(int percent) {
         prefs.edit().putInt(KEY_VOLUME_CAP_PERCENT, percent).apply();
+    }
+
+    /**
+     * Compute maximum allowable stream volume index according to parental cap settings.
+     */
+    public int getMaxAllowedVolume(android.media.AudioManager audioManager, int stream) {
+        if (audioManager == null) return 15;
+        try {
+            int max = audioManager.getStreamMaxVolume(stream);
+            if (max <= 0) return 0;
+            if (!isVolumeLimiterEnabled()) return max;
+            int cap = (int) Math.ceil(max * (getVolumeCapPercent() / 100.0f));
+            return Math.max(1, Math.min(max, cap));
+        } catch (Exception e) {
+            return 15;
+        }
     }
 }

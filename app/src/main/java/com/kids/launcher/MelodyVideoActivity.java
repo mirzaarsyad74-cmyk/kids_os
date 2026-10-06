@@ -955,11 +955,17 @@ public class MelodyVideoActivity extends AppCompatActivity {
                         } else {
                             // Volume swipe on right side
                             if (audioManager != null) {
-                                int maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-                                int volChange = (int) (percentDelta * maxVol);
-                                int newVol = Math.max(0, Math.min(maxVol, startVolume + volChange));
-                                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0);
-                                showVolumeHud(newVol, maxVol);
+                                try {
+                                    int maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                                    PreferencesManager prefs = PreferencesManager.getInstance(this);
+                                    int cap = (prefs != null) ? prefs.getMaxAllowedVolume(audioManager, AudioManager.STREAM_MUSIC) : maxVol;
+                                    int volChange = (int) (percentDelta * maxVol);
+                                    int newVol = Math.max(0, Math.min(cap, startVolume + volChange));
+                                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0);
+                                    showVolumeHud(newVol, maxVol);
+                                } catch (Throwable t) {
+                                    t.printStackTrace();
+                                }
                             }
                         }
                     } else if (isSwipeHorizontal) {
@@ -1408,19 +1414,25 @@ public class MelodyVideoActivity extends AppCompatActivity {
 
     private void toggleMute() {
         if (audioManager == null) return;
-        int maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-        if (!isMuted) {
-            volumeBeforeMute = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
-            isMuted = true;
-            btnPlayerMute.setText("🔇");
-            showVolumeHud(0, maxVol);
-        } else {
-            int target = volumeBeforeMute > 0 ? volumeBeforeMute : (maxVol / 2);
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, target, 0);
-            isMuted = false;
-            btnPlayerMute.setText("🔊");
-            showVolumeHud(target, maxVol);
+        try {
+            int maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            PreferencesManager prefs = PreferencesManager.getInstance(this);
+            int cap = (prefs != null) ? prefs.getMaxAllowedVolume(audioManager, AudioManager.STREAM_MUSIC) : maxVol;
+            if (!isMuted) {
+                volumeBeforeMute = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
+                isMuted = true;
+                btnPlayerMute.setText("🔇");
+                showVolumeHud(0, maxVol);
+            } else {
+                int target = volumeBeforeMute > 0 ? Math.min(volumeBeforeMute, cap) : Math.min(maxVol / 2, cap);
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, target, 0);
+                isMuted = false;
+                btnPlayerMute.setText("🔊");
+                showVolumeHud(target, maxVol);
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
         playerHandler.postDelayed(() -> {
             if (layoutHudVolume != null) layoutHudVolume.setVisibility(View.GONE);

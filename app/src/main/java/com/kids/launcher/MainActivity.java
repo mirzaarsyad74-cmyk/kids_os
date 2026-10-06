@@ -496,8 +496,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                     if (fromUser && audioManager != null) {
-                        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
-                        showVolumeHud((int) (progress * 100.0f / max));
+                        int cap = (prefs != null) ? prefs.getMaxAllowedVolume(audioManager, AudioManager.STREAM_MUSIC) : max;
+                        if (progress > cap) {
+                            progress = cap;
+                            seekBar.setProgress(cap);
+                            try {
+                                Toast.makeText(MainActivity.this,
+                                        "🎧 Ear Protection: Max volume capped at " + (prefs != null ? prefs.getVolumeCapPercent() : 70) + "%! 💕",
+                                        Toast.LENGTH_SHORT).show();
+                            } catch (Throwable ignored) {}
+                        }
+                        try {
+                            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
+                        } catch (Throwable t) {
+                            t.printStackTrace();
+                        }
+                        showVolumeHud((int) (progress * 100.0f / (max > 0 ? max : 1)));
                     }
                 }
                 @Override
@@ -646,6 +660,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (tvQuickRotationLabel != null) {
             tvQuickRotationLabel.setText(isAutoRotate ? "Auto-Rotate" : "Locked");
             tvQuickRotationLabel.setTextColor(isAutoRotate ? Color.WHITE : Color.parseColor("#831843"));
+        }
+
+        // Volume Slider sync
+        if (sbVolume != null && audioManager != null) {
+            try {
+                int max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                int cap = (prefs != null) ? prefs.getMaxAllowedVolume(audioManager, AudioManager.STREAM_MUSIC) : max;
+                sbVolume.setMax(max);
+                sbVolume.setProgress(Math.min(current, cap));
+            } catch (Throwable ignored) {}
         }
     }
 
@@ -802,22 +827,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             if (audioManager != null) {
-                int max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-                int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-                int cap = (prefs != null && prefs.isVolumeLimiterEnabled()) ? (int) (max * (prefs.getVolumeCapPercent() / 100.0f)) : max;
-                if (current >= cap) {
-                    Toast.makeText(this, "🎧 Ear Protection: Max volume capped at " + (prefs != null ? prefs.getVolumeCapPercent() : 70) + "%! 💕", Toast.LENGTH_SHORT).show();
+                try {
+                    int max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                    int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                    int cap = (prefs != null) ? prefs.getMaxAllowedVolume(audioManager, AudioManager.STREAM_MUSIC) : max;
+                    if (current >= cap) {
+                        if (current > cap) {
+                            try { audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, cap, 0); } catch (Throwable ignored) {}
+                        }
+                        try {
+                            Toast.makeText(this, "🎧 Ear Protection: Max volume capped at " + (prefs != null ? prefs.getVolumeCapPercent() : 70) + "%! 💕", Toast.LENGTH_SHORT).show();
+                        } catch (Throwable ignored) {}
+                        showVolumeHud(getCurrentVolumePercent());
+                        return true;
+                    }
+                    audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, 0);
                     showVolumeHud(getCurrentVolumePercent());
-                    return true;
+                } catch (Throwable t) {
+                    t.printStackTrace();
                 }
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, 0);
-                showVolumeHud(getCurrentVolumePercent());
             }
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
             if (audioManager != null) {
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, 0);
-                showVolumeHud(getCurrentVolumePercent());
+                try {
+                    audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, 0);
+                    showVolumeHud(getCurrentVolumePercent());
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
             }
             return true;
         }
@@ -826,9 +864,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private int getCurrentVolumePercent() {
         if (audioManager == null) return 50;
-        int max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-        int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-        return (int) (current * 100.0f / max);
+        try {
+            int max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            if (max <= 0) return 50;
+            int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+            return (int) (current * 100.0f / max);
+        } catch (Throwable t) {
+            return 50;
+        }
     }
 
     private void showVolumeHud(int percent) {

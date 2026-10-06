@@ -21,6 +21,7 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
@@ -83,8 +84,11 @@ public class MelodyGlobalService extends AccessibilityService {
     private final Handler healthHandler = new Handler(Looper.getMainLooper());
     private Runnable postureRunnable;
 
-    // Volume Limiter ContentObserver — enforces cap on ALL volume changes (hardware keys, in-app)
+    // Volume Limiter ContentObserver & BroadcastReceiver — enforces cap on ALL volume changes (hardware keys, in-app)
     private ContentObserver volumeObserver;
+    private BroadcastReceiver volumeBroadcastReceiver;
+    private final Handler volumeHandler = new Handler(Looper.getMainLooper());
+    private boolean isEnforcingVolume = false;
     private long lastVolumeCapToastTime = 0;
 
     private String lastBoostedPackage = "";
@@ -450,17 +454,19 @@ public class MelodyGlobalService extends AccessibilityService {
     }
 
     /**
-     * Register a ContentObserver on the system volume setting.
+     * Register a ContentObserver and BroadcastReceiver on the system volume setting.
      * Whenever ANY volume change happens (hardware buttons, in-app sliders, system UI),
      * we check and clamp it to the parent-configured percentage cap.
      */
     private void setupVolumeObserver() {
         if (audioManager == null) return;
-        volumeObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
+        volumeObserver = new ContentObserver(volumeHandler) {
             @Override
             public void onChange(boolean selfChange) {
                 super.onChange(selfChange);
-                enforceVolumeCap();
+                // Debounce volume enforcement to prevent recursive self-trigger storms
+                volumeHandler.removeCallbacks(volumeEnforceRunnable);
+                volumeHandler.postDelayed(volumeEnforceRunnable, 60);
             }
         };
         try {
@@ -469,46 +475,81 @@ public class MelodyGlobalService extends AccessibilityService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // Also register system VOLUME_CHANGED_ACTION broadcast for immediate response
+        try {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction("android.media.VOLUME_CHANGED_ACTION");
+            filter.addAction("android.media.STREAM_MUTE_CHANGED_ACTION");
+            volumeBroadcastReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    volumeHandler.removeCallbacks(volumeEnforceRunnable);
+                    volumeHandler.postDelayed(volumeEnforceRunnable, 60);
+                }
+            };
+            registerReceiver(volumeBroadcastReceiver, filter);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // Apply the cap immediately on startup
         enforceVolumeCap();
     }
 
+    private final Runnable volumeEnforceRunnable = this::enforceVolumeCap;
+
     /**
-     * Enforce the volume cap across all audio streams.
+     * Enforce the volume cap across all audio streams safely.
      * Called from ContentObserver on every volume change, and also from ParentZoneActivity
      * when the parent adjusts settings.
      */
     public void enforceVolumeCap() {
         if (audioManager == null || prefs == null) return;
         if (!prefs.isVolumeLimiterEnabled()) return;
+        if (isEnforcingVolume) return;
 
-        int capPercent = prefs.getVolumeCapPercent();
-        int[] streams = {
-                AudioManager.STREAM_MUSIC,
-                AudioManager.STREAM_RING,
-                AudioManager.STREAM_NOTIFICATION,
-                AudioManager.STREAM_ALARM
-        };
+        isEnforcingVolume = true;
+        try {
+            int capPercent = prefs.getVolumeCapPercent();
+            int[] streams = {
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.STREAM_RING,
+                    AudioManager.STREAM_NOTIFICATION,
+                    AudioManager.STREAM_ALARM
+            };
 
-        boolean wasCapped = false;
-        for (int stream : streams) {
-            int max = audioManager.getStreamMaxVolume(stream);
-            int capValue = (int) Math.ceil(max * (capPercent / 100.0f));
-            int current = audioManager.getStreamVolume(stream);
-            if (current > capValue) {
-                audioManager.setStreamVolume(stream, capValue, 0);
-                wasCapped = true;
+            boolean wasCapped = false;
+            for (int stream : streams) {
+                try {
+                    int max = audioManager.getStreamMaxVolume(stream);
+                    if (max <= 0) continue;
+                    int capValue = prefs.getMaxAllowedVolume(audioManager, stream);
+                    int current = audioManager.getStreamVolume(stream);
+                    if (current > capValue) {
+                        audioManager.setStreamVolume(stream, capValue, 0);
+                        wasCapped = true;
+                    }
+                } catch (Throwable t) {
+                    // Prevent SecurityException (e.g. Do Not Disturb policy restriction) or other OEM errors from crashing
+                    Log.w("MelodyGlobalService", "Could not enforce cap on stream " + stream + ": " + t.getMessage());
+                }
             }
-        }
 
-        if (wasCapped) {
-            long now = System.currentTimeMillis();
-            if (now - lastVolumeCapToastTime > 3000) {
-                lastVolumeCapToastTime = now;
-                Toast.makeText(this,
-                        "🎧 Volume capped at " + capPercent + "%! Ask a parent to change it 💕",
-                        Toast.LENGTH_SHORT).show();
+            if (wasCapped) {
+                long now = System.currentTimeMillis();
+                if (now - lastVolumeCapToastTime > 3000) {
+                    lastVolumeCapToastTime = now;
+                    try {
+                        Toast.makeText(getApplicationContext(),
+                                "🎧 Volume capped at " + capPercent + "%! Ask a parent to change it 💕",
+                                Toast.LENGTH_SHORT).show();
+                    } catch (Throwable ignored) {}
+                }
             }
+        } finally {
+            // Delay unlocking to let system AudioService flush and prevent re-trigger loop
+            volumeHandler.postDelayed(() -> isEnforcingVolume = false, 150);
         }
     }
 
@@ -1066,21 +1107,33 @@ public class MelodyGlobalService extends AccessibilityService {
         // 5. Volume Up
         touchMenuView.findViewById(R.id.btn_action_vol_up).setOnClickListener(v -> {
             if (audioManager != null) {
-                int max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-                int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-                int cap = (prefs != null && prefs.isVolumeLimiterEnabled()) ? (int) (max * (prefs.getVolumeCapPercent() / 100.0f)) : max;
-                if (current >= cap) {
-                    Toast.makeText(MelodyGlobalService.this, "🎧 Ear Protection: Max volume capped at " + (prefs != null ? prefs.getVolumeCapPercent() : 70) + "%! 💕", Toast.LENGTH_SHORT).show();
-                    return;
+                try {
+                    int cap = (prefs != null) ? prefs.getMaxAllowedVolume(audioManager, AudioManager.STREAM_MUSIC) : 15;
+                    int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                    if (current >= cap) {
+                        if (current > cap) {
+                            try { audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, cap, 0); } catch (Throwable ignored) {}
+                        }
+                        try {
+                            Toast.makeText(getApplicationContext(), "🎧 Ear Protection: Max volume capped at " + (prefs != null ? prefs.getVolumeCapPercent() : 70) + "%! 💕", Toast.LENGTH_SHORT).show();
+                        } catch (Throwable ignored) {}
+                        return;
+                    }
+                    audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, 0);
+                } catch (Throwable t) {
+                    t.printStackTrace();
                 }
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI);
             }
         });
 
         // 6. Volume Down
         touchMenuView.findViewById(R.id.btn_action_vol_down).setOnClickListener(v -> {
             if (audioManager != null) {
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI);
+                try {
+                    audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, 0);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
             }
         });
 
@@ -1225,5 +1278,10 @@ public class MelodyGlobalService extends AccessibilityService {
             try { getContentResolver().unregisterContentObserver(volumeObserver); } catch (Exception ignored) {}
             volumeObserver = null;
         }
+        if (volumeBroadcastReceiver != null) {
+            try { unregisterReceiver(volumeBroadcastReceiver); } catch (Exception ignored) {}
+            volumeBroadcastReceiver = null;
+        }
+        volumeHandler.removeCallbacksAndMessages(null);
     }
 }

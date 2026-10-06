@@ -294,7 +294,11 @@ public class ParentZoneActivity extends AppCompatActivity {
             prefs.setVolumeLimiterEnabled(isChecked);
             updateVolumeSliderVisibility(isChecked);
             if (MelodyGlobalService.getInstance() != null) {
-                MelodyGlobalService.getInstance().enforceVolumeCap();
+                try {
+                    MelodyGlobalService.getInstance().enforceVolumeCap();
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
             }
             Toast.makeText(this,
                     isChecked ? "🎧 Volume Limit Enabled (Max " + prefs.getVolumeCapPercent() + "%) 💕"
@@ -321,7 +325,11 @@ public class ParentZoneActivity extends AppCompatActivity {
                 tvVolumeCapLabel.setText(progress + "%");
                 // Apply immediately
                 if (MelodyGlobalService.getInstance() != null) {
-                    MelodyGlobalService.getInstance().enforceVolumeCap();
+                    try {
+                        MelodyGlobalService.getInstance().enforceVolumeCap();
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                    }
                 }
                 Toast.makeText(ParentZoneActivity.this,
                         "🎧 Volume cap set to " + progress + "%", Toast.LENGTH_SHORT).show();
