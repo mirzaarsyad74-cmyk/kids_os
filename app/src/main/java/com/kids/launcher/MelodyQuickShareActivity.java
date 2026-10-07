@@ -340,20 +340,26 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
         chipVideos = findViewById(R.id.chip_share_videos);
         chipMusic = findViewById(R.id.chip_share_music);
 
-        chipPhotos.setOnClickListener(v -> {
-            highlightCategoryChip(chipPhotos);
-            loadCategoryFiles("photos");
-        });
+        if (chipPhotos != null) {
+            chipPhotos.setOnClickListener(v -> {
+                highlightCategoryChip(chipPhotos);
+                loadCategoryFiles("photos");
+            });
+        }
 
-        chipVideos.setOnClickListener(v -> {
-            highlightCategoryChip(chipVideos);
-            loadCategoryFiles("videos");
-        });
+        if (chipVideos != null) {
+            chipVideos.setOnClickListener(v -> {
+                highlightCategoryChip(chipVideos);
+                loadCategoryFiles("videos");
+            });
+        }
 
-        chipMusic.setOnClickListener(v -> {
-            highlightCategoryChip(chipMusic);
-            loadCategoryFiles("music");
-        });
+        if (chipMusic != null) {
+            chipMusic.setOnClickListener(v -> {
+                highlightCategoryChip(chipMusic);
+                loadCategoryFiles("music");
+            });
+        }
     }
 
     private void highlightCategoryChip(TextView selected) {
