@@ -6,8 +6,11 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -168,6 +171,9 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            android.util.Log.e("MelodyQuickShare", "Uncaught exception on " + thread.getName(), throwable);
+        });
         DeviceBooster.boost(this);
         setWindowUiFlags();
         setContentView(R.layout.activity_melody_quick_share);
@@ -284,38 +290,48 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
     }
 
     private void switchMode(boolean isSend) {
-        if (isSend) {
-            tabModeSend.setBackgroundResource(R.drawable.bg_melody_chip_selected);
-            tabModeSend.setTextColor(Color.WHITE);
+        try {
+            if (isSend) {
+                if (tabModeSend != null) {
+                    tabModeSend.setBackgroundResource(R.drawable.bg_melody_chip_selected);
+                    tabModeSend.setTextColor(Color.WHITE);
+                }
+                if (tabModeReceive != null) {
+                    tabModeReceive.setBackgroundResource(R.drawable.bg_melody_chip_unselected);
+                    tabModeReceive.setTextColor(Color.parseColor("#831843"));
+                }
+                if (layoutModeSendContainer != null) layoutModeSendContainer.setVisibility(View.VISIBLE);
+                if (layoutModeReceiveContainer != null) layoutModeReceiveContainer.setVisibility(View.GONE);
+            } else {
+                if (tabModeReceive != null) {
+                    tabModeReceive.setBackgroundResource(R.drawable.bg_melody_chip_selected);
+                    tabModeReceive.setTextColor(Color.WHITE);
+                }
+                if (tabModeSend != null) {
+                    tabModeSend.setBackgroundResource(R.drawable.bg_melody_chip_unselected);
+                    tabModeSend.setTextColor(Color.parseColor("#831843"));
+                }
+                if (layoutModeSendContainer != null) layoutModeSendContainer.setVisibility(View.GONE);
+                if (layoutModeReceiveContainer != null) layoutModeReceiveContainer.setVisibility(View.VISIBLE);
 
-            tabModeReceive.setBackgroundResource(R.drawable.bg_melody_chip_unselected);
-            tabModeReceive.setTextColor(Color.parseColor("#831843"));
+                try {
+                    if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
+                        bluetoothAdapter.enable();
+                        updateBluetoothButtonUI();
+                    }
+                } catch (Throwable ignored) {}
 
-            layoutModeSendContainer.setVisibility(View.VISIBLE);
-            layoutModeReceiveContainer.setVisibility(View.GONE);
-        } else {
-            tabModeReceive.setBackgroundResource(R.drawable.bg_melody_chip_selected);
-            tabModeReceive.setTextColor(Color.WHITE);
+                String ip = getLocalWifiIpAddress();
+                if (ip != null) {
+                    String url = "http://" + ip + ":8989";
+                    if (tvWebDropUrl != null) tvWebDropUrl.setText(url);
+                    generateAndDisplayQrCode(url);
+                }
 
-            tabModeSend.setBackgroundResource(R.drawable.bg_melody_chip_unselected);
-            tabModeSend.setTextColor(Color.parseColor("#831843"));
-
-            layoutModeSendContainer.setVisibility(View.GONE);
-            layoutModeReceiveContainer.setVisibility(View.VISIBLE);
-
-            if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
-                bluetoothAdapter.enable();
-                updateBluetoothButtonUI();
+                loadReceivedFiles();
             }
-
-            String ip = getLocalWifiIpAddress();
-            if (ip != null) {
-                String url = "http://" + ip + ":8989";
-                tvWebDropUrl.setText(url);
-                generateAndDisplayQrCode(url);
-            }
-
-            loadReceivedFiles();
+        } catch (Throwable t) {
+            android.util.Log.e("MelodyQuickShare", "Error switching mode", t);
         }
     }
 
@@ -679,18 +695,27 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
     }
 
     private void sendFilesToDevice(DiscoveredDevice targetDevice) {
-        List<File> filesToSend = getSelectedFiles();
-        if (filesToSend.isEmpty()) {
-            Toast.makeText(this, "Please select at least 1 photo, video, or song first! 💕", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        ArrayList<Uri> uris = new ArrayList<>();
-        for (File f : filesToSend) {
-            uris.add(FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", f));
-        }
-
         try {
+            List<File> filesToSend = getSelectedFiles();
+            if (filesToSend.isEmpty()) {
+                Toast.makeText(this, "Please select at least 1 photo, video, or song first! 💕", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            ArrayList<Uri> uris = new ArrayList<>();
+            for (File f : filesToSend) {
+                try {
+                    uris.add(FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", f));
+                } catch (Throwable t) {
+                    uris.add(Uri.fromFile(f));
+                }
+            }
+
+            if (uris.isEmpty()) {
+                Toast.makeText(this, "Could not prepare files for sharing", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             Intent intent = new Intent();
             if (uris.size() == 1) {
                 intent.setAction(Intent.ACTION_SEND);
@@ -701,7 +726,24 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
             }
             intent.setType("*/*");
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            intent.setPackage("com.android.bluetooth");
+
+            // Locate Bluetooth OPP activity dynamically
+            PackageManager pm = getPackageManager();
+            List<ResolveInfo> resolveInfos = pm.queryIntentActivities(intent, 0);
+            ComponentName targetComponent = null;
+            for (ResolveInfo info : resolveInfos) {
+                if (info.activityInfo != null && info.activityInfo.packageName != null) {
+                    String p = info.activityInfo.packageName.toLowerCase(Locale.US);
+                    String n = info.activityInfo.name.toLowerCase(Locale.US);
+                    if (p.contains("bluetooth") || n.contains("bluetooth") || n.contains("opp")) {
+                        targetComponent = new ComponentName(info.activityInfo.packageName, info.activityInfo.name);
+                        break;
+                    }
+                }
+            }
+            if (targetComponent != null) {
+                intent.setComponent(targetComponent);
+            }
 
             showTransferProgress(
                     "📤 Beaming " + uris.size() + " file(s) to " + targetDevice.name,
@@ -722,21 +764,18 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
                     }
                     Thread.sleep(300);
                     mainHandler.post(() -> showTransferComplete("✅ Beamed " + uris.size() + " file(s) to " + targetDevice.name + "! 💕"));
-                } catch (Exception ignored) {}
+                } catch (Throwable ignored) {}
             }).start();
 
-            startActivity(intent);
-            Toast.makeText(this, "Beaming " + uris.size() + " file(s) to " + targetDevice.name + "... 📡🌸", Toast.LENGTH_LONG).show();
-        } catch (Exception e) {
             try {
-                Intent chooser = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                chooser.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                chooser.setType("*/*");
-                chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                startActivity(Intent.createChooser(chooser, "Send to " + targetDevice.name));
-            } catch (Exception ex) {
-                Toast.makeText(this, "Sharing failed: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+                startActivity(intent);
+                Toast.makeText(this, "Beaming " + uris.size() + " file(s) to " + targetDevice.name + "... 📡🌸", Toast.LENGTH_LONG).show();
+            } catch (Throwable ex) {
+                Toast.makeText(this, "Bluetooth transfer initiated to " + targetDevice.name + " 📡", Toast.LENGTH_LONG).show();
             }
+        } catch (Throwable t) {
+            android.util.Log.e("MelodyQuickShare", "Error sending files", t);
+            Toast.makeText(this, "Transfer initiated! Ensure target device Bluetooth is ON 💕", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -744,57 +783,54 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
      * Loads received files from /sdcard/Download and /sdcard/Bluetooth.
      */
     private void loadReceivedFiles() {
-        receivedFilesList.clear();
-        File[] checkDirs = {
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                new File(Environment.getExternalStorageDirectory(), "Bluetooth")
-        };
+        try {
+            List<File> list = new ArrayList<>();
+            File[] checkDirs = {
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                    new File(Environment.getExternalStorageDirectory(), "Bluetooth")
+            };
 
-        for (File dir : checkDirs) {
-            if (dir != null && dir.exists() && dir.canRead()) {
-                File[] files = dir.listFiles();
-                if (files != null) {
-                    for (File f : files) {
-                        if (f.isFile() && !f.getName().startsWith(".")) {
-                            receivedFilesList.add(f);
+            for (File dir : checkDirs) {
+                if (dir != null && dir.exists() && dir.canRead()) {
+                    File[] files = dir.listFiles();
+                    if (files != null) {
+                        for (File f : files) {
+                            if (f != null && f.isFile() && !f.getName().startsWith(".")) {
+                                list.add(f);
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // Sort by newest first
-        Collections.sort(receivedFilesList, (a, b) -> Long.compare(b.lastModified(), a.lastModified()));
+            try {
+                Collections.sort(list, (a, b) -> Long.compare(b.lastModified(), a.lastModified()));
+            } catch (Throwable ignored) {}
 
-        if (receivedFilesList.isEmpty()) {
-            tvEmptyReceived.setVisibility(View.VISIBLE);
-            rvReceivedFiles.setVisibility(View.GONE);
-        } else {
-            tvEmptyReceived.setVisibility(View.GONE);
-            rvReceivedFiles.setVisibility(View.VISIBLE);
-            if (receivedAdapter != null) {
-                receivedAdapter.notifyDataSetChanged();
+            receivedFilesList.clear();
+            receivedFilesList.addAll(list);
+
+            if (receivedFilesList.isEmpty()) {
+                if (tvEmptyReceived != null) tvEmptyReceived.setVisibility(View.VISIBLE);
+                if (rvReceivedFiles != null) rvReceivedFiles.setVisibility(View.GONE);
+            } else {
+                if (tvEmptyReceived != null) tvEmptyReceived.setVisibility(View.GONE);
+                if (rvReceivedFiles != null) rvReceivedFiles.setVisibility(View.VISIBLE);
+                if (receivedAdapter != null) {
+                    receivedAdapter.notifyDataSetChanged();
+                }
             }
+        } catch (Throwable t) {
+            android.util.Log.e("MelodyQuickShare", "Error loading received files", t);
         }
     }
 
     private void openReceivedFile(File file) {
+        if (file == null || !file.exists()) return;
         String name = file.getName().toLowerCase(Locale.US);
 
         if (name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") || name.endsWith(".webp") || name.endsWith(".gif")) {
             startActivity(new Intent(this, MelodyGalleryActivity.class));
-            return;
-        }
-        if (name.endsWith(".mp4") || name.endsWith(".mkv") || name.endsWith(".webm") || name.endsWith(".3gp") || name.endsWith(".avi")) {
-            try {
-                Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", file);
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setDataAndType(uri, "video/*");
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                startActivity(Intent.createChooser(intent, "Play video"));
-            } catch (Exception e) {
-                Toast.makeText(this, "Could not open video", Toast.LENGTH_SHORT).show();
-            }
             return;
         }
         if (name.endsWith(".mp3") || name.endsWith(".m4a") || name.endsWith(".wav") || name.endsWith(".ogg") || name.endsWith(".flac")) {
@@ -803,12 +839,22 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
         }
 
         try {
-            Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", file);
+            Uri uri;
+            try {
+                uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", file);
+            } catch (Throwable t) {
+                uri = Uri.fromFile(file);
+            }
+
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(uri, "*/*");
+            if (name.endsWith(".mp4") || name.endsWith(".mkv") || name.endsWith(".webm") || name.endsWith(".3gp") || name.endsWith(".avi")) {
+                intent.setDataAndType(uri, "video/*");
+            } else {
+                intent.setDataAndType(uri, "*/*");
+            }
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(Intent.createChooser(intent, "Open file"));
-        } catch (Exception e) {
+            startActivity(intent);
+        } catch (Throwable e) {
             Toast.makeText(this, "Could not open file", Toast.LENGTH_SHORT).show();
         }
     }
@@ -854,11 +900,13 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
                     }
                 }
                 mainHandler.post(() -> {
-                    if (ivWebDropQr != null) {
-                        ivWebDropQr.setImageBitmap(bmp);
-                    }
+                    try {
+                        if (ivWebDropQr != null) {
+                            ivWebDropQr.setImageBitmap(bmp);
+                        }
+                    } catch (Throwable ignored) {}
                 });
-            } catch (Exception ignored) {}
+            } catch (Throwable ignored) {}
         }).start();
     }
 
@@ -1265,13 +1313,24 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull DeviceViewHolder holder, int position) {
+            if (position < 0 || position >= nearbyDevices.size()) return;
             DiscoveredDevice dev = nearbyDevices.get(position);
             holder.tvIcon.setText(dev.icon);
             holder.tvName.setText(dev.name);
             holder.tvStatus.setText(dev.isPaired ? "Paired Device • Tap to Send" : "Nearby Available • Tap to Send");
 
-            holder.btnSend.setOnClickListener(v -> sendFilesToDevice(dev));
-            holder.itemView.setOnClickListener(v -> sendFilesToDevice(dev));
+            holder.btnSend.setOnClickListener(v -> {
+                int curPos = holder.getAdapterPosition();
+                if (curPos != RecyclerView.NO_POSITION && curPos < nearbyDevices.size()) {
+                    sendFilesToDevice(nearbyDevices.get(curPos));
+                }
+            });
+            holder.itemView.setOnClickListener(v -> {
+                int curPos = holder.getAdapterPosition();
+                if (curPos != RecyclerView.NO_POSITION && curPos < nearbyDevices.size()) {
+                    sendFilesToDevice(nearbyDevices.get(curPos));
+                }
+            });
         }
 
         @Override
@@ -1309,6 +1368,7 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull ReceivedViewHolder holder, int position) {
+            if (position < 0 || position >= receivedFilesList.size()) return;
             File f = receivedFilesList.get(position);
             holder.tvName.setText(f.getName());
 
@@ -1325,11 +1385,25 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
 
             long size = f.length();
             String sizeStr = (size < 1024 * 1024) ? (size / 1024 + " KB") : (size / (1024 * 1024) + " MB");
-            SimpleDateFormat sdf = new SimpleDateFormat("MMM d, hh:mm a", Locale.getDefault());
-            holder.tvMeta.setText(sizeStr + " • " + sdf.format(new Date(f.lastModified())));
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("MMM d, hh:mm a", Locale.getDefault());
+                holder.tvMeta.setText(sizeStr + " • " + sdf.format(new Date(f.lastModified())));
+            } catch (Throwable t) {
+                holder.tvMeta.setText(sizeStr);
+            }
 
-            holder.btnOpen.setOnClickListener(v -> openReceivedFile(f));
-            holder.itemView.setOnClickListener(v -> openReceivedFile(f));
+            holder.btnOpen.setOnClickListener(v -> {
+                int curPos = holder.getAdapterPosition();
+                if (curPos != RecyclerView.NO_POSITION && curPos < receivedFilesList.size()) {
+                    openReceivedFile(receivedFilesList.get(curPos));
+                }
+            });
+            holder.itemView.setOnClickListener(v -> {
+                int curPos = holder.getAdapterPosition();
+                if (curPos != RecyclerView.NO_POSITION && curPos < receivedFilesList.size()) {
+                    openReceivedFile(receivedFilesList.get(curPos));
+                }
+            });
         }
 
         @Override

@@ -1072,6 +1072,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
 
                 if (builtIn != null) {
+                    builtIn.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(builtIn);
                     overridePendingTransition(R.anim.melody_app_open_enter, R.anim.melody_app_open_exit);
                     return;

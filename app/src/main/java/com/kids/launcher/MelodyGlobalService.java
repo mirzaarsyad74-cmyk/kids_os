@@ -522,7 +522,9 @@ public class MelodyGlobalService extends AccessibilityService {
             layoutType = WindowManager.LayoutParams.TYPE_PHONE;
         }
 
-        int shieldHeight = (int) (40 * getResources().getDisplayMetrics().density);
+        int resId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        int statusBarHeight = resId > 0 ? getResources().getDimensionPixelSize(resId) : (int) (20 * getResources().getDisplayMetrics().density);
+        int shieldHeight = Math.min(statusBarHeight, (int) (24 * getResources().getDisplayMetrics().density));
 
         WindowManager.LayoutParams shieldParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -557,7 +559,8 @@ public class MelodyGlobalService extends AccessibilityService {
                         float dy = event.getRawY() - startY;
                         float dx = Math.abs(event.getRawX() - startX);
                         collapseStockStatusBar();
-                        if (dy > 12 || dx < 30) {
+                        float minSwipe = 24 * getResources().getDisplayMetrics().density;
+                        if (dy > minSwipe && dy > dx * 1.3f) {
                             openMelodyControlCenter();
                         }
                         return true;

@@ -124,6 +124,8 @@
         <activity
             android:name=".MelodyQuickShareActivity"
             android:exported="true"
+            android:taskAffinity="com.kids.launcher.quickshare"
+            android:launchMode="singleTop"
             android:screenOrientation="sensorLandscape"
             android:theme="@style/Theme.KidsLauncher.Fullscreen" />
 
