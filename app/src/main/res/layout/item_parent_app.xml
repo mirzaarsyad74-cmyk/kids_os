@@ -42,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="App Name"
-                android:textColor="#FFFFFF"
+                android:textColor="#831843"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:maxLines="1"

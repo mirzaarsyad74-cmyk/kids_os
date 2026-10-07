@@ -171,8 +171,12 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             android.util.Log.e("MelodyQuickShare", "Uncaught exception on " + thread.getName(), throwable);
+            if (defaultHandler != null) {
+                defaultHandler.uncaughtException(thread, throwable);
+            }
         });
         DeviceBooster.boost(this);
         setWindowUiFlags();
@@ -591,6 +595,7 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
         ContentResolver cr = getContentResolver();
 
         if ("photos".equals(category)) {
+            java.util.Set<String> seenPaths = new java.util.HashSet<>();
             try {
                 Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
                 Cursor c = cr.query(uri, new String[]{MediaStore.Images.Media.DATA, MediaStore.Images.Media.DISPLAY_NAME},
@@ -605,12 +610,34 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
                             File f = new File(p);
                             if (f.exists()) {
                                 loadedList.add(new ShareableFile(f, n != null ? n : f.getName(), "image/*"));
+                                seenPaths.add(f.getAbsolutePath());
                             }
                         }
                     }
                     c.close();
                 }
             } catch (Exception ignored) {}
+
+            File[] cameraDirs = {
+                    new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "MelodyCamera"),
+                    new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "Camera")
+            };
+            for (File cDir : cameraDirs) {
+                if (cDir.exists() && cDir.isDirectory()) {
+                    File[] files = cDir.listFiles();
+                    if (files != null) {
+                        for (File f : files) {
+                            if (f.isFile() && !seenPaths.contains(f.getAbsolutePath())) {
+                                String ln = f.getName().toLowerCase(Locale.US);
+                                if (ln.endsWith(".jpg") || ln.endsWith(".png") || ln.endsWith(".jpeg") || ln.endsWith(".webp")) {
+                                    loadedList.add(new ShareableFile(f, f.getName(), "image/*"));
+                                    seenPaths.add(f.getAbsolutePath());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         } else if ("videos".equals(category)) {
             try {
                 Uri uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
@@ -1292,7 +1319,7 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
             ImageView ivThumb;
             TextView tvIcon;
             TextView tvName;
-            TextView tvSelected;
+            View tvSelected;
 
             FileShareViewHolder(@NonNull View itemView) {
                 super(itemView);
