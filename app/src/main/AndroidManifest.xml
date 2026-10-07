@@ -21,6 +21,11 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="s" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" tools:targetApi="s" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" tools:targetApi="s" />
     <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.front" android:required="false" />
@@ -61,6 +66,7 @@
             android:name=".ParentZoneActivity"
             android:exported="true"
             android:screenOrientation="sensorLandscape"
+            android:windowSoftInputMode="stateHidden|adjustResize"
             android:label="Parent Zone"
             android:theme="@style/Theme.KidsLauncher" />
 
@@ -113,12 +119,6 @@
             android:screenOrientation="sensorLandscape"
             android:theme="@style/Theme.KidsLauncher.Fullscreen" />
 
-        <!-- Cute Melody Video Player Activity -->
-        <activity
-            android:name=".MelodyVideoActivity"
-            android:exported="true"
-            android:screenOrientation="sensorLandscape"
-            android:theme="@style/Theme.KidsLauncher.Fullscreen" />
 
         <!-- Cute Melody Quick Share & Bluetooth Activity -->
         <activity

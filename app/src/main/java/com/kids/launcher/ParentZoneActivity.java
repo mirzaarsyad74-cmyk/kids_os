@@ -58,12 +58,6 @@ public class ParentZoneActivity extends AppCompatActivity {
     // Health & Wellbeing Controls
     private SwitchCompat switchBlueLight;
     private SwitchCompat switchPostureReminder;
-    private SwitchCompat switchVolumeLimiter;
-
-    // Volume Limiter Controls
-    private LinearLayout layoutVolumeSlider;
-    private SeekBar seekBarVolumeCap;
-    private TextView tvVolumeCapLabel;
 
     // Pending App Approvals
     private LinearLayout layoutPendingApprovals;
@@ -100,7 +94,6 @@ public class ParentZoneActivity extends AppCompatActivity {
         initViews();
         setupAdvancedControls();
         setupHealthControls();
-        setupVolumeControls();
         setupAndroidSettingsTiles();
         setupTimeLimits();
         setupAppList();
@@ -136,12 +129,6 @@ public class ParentZoneActivity extends AppCompatActivity {
 
         switchBlueLight = findViewById(R.id.switch_blue_light);
         switchPostureReminder = findViewById(R.id.switch_posture_reminder);
-        switchVolumeLimiter = findViewById(R.id.switch_volume_limiter);
-
-        // Volume limiter slider
-        layoutVolumeSlider = findViewById(R.id.layout_volume_slider);
-        seekBarVolumeCap = findViewById(R.id.seekbar_volume_cap);
-        tvVolumeCapLabel = findViewById(R.id.tv_volume_cap_label);
 
         layoutPendingApprovals = findViewById(R.id.layout_pending_approvals);
         containerPendingApps = findViewById(R.id.container_pending_apps);
@@ -272,74 +259,6 @@ public class ParentZoneActivity extends AppCompatActivity {
                 prefs.setPostureReminderEnabled(isChecked);
                 Toast.makeText(this, isChecked ? "Posture Reminders Active 🧸" : "Posture Reminders Off", Toast.LENGTH_SHORT).show();
             });
-        }
-    }
-
-    /**
-     * Volume Limiter: Toggle + SeekBar for custom percentage cap.
-     * When parent changes settings, immediately enforce via MelodyGlobalService.
-     */
-    private void setupVolumeControls() {
-        if (switchVolumeLimiter == null || seekBarVolumeCap == null || tvVolumeCapLabel == null) return;
-
-        boolean limiterEnabled = prefs.isVolumeLimiterEnabled();
-        int capPercent = prefs.getVolumeCapPercent();
-
-        switchVolumeLimiter.setChecked(limiterEnabled);
-        seekBarVolumeCap.setProgress(capPercent);
-        tvVolumeCapLabel.setText(capPercent + "%");
-        updateVolumeSliderVisibility(limiterEnabled);
-
-        switchVolumeLimiter.setOnCheckedChangeListener((b, isChecked) -> {
-            prefs.setVolumeLimiterEnabled(isChecked);
-            updateVolumeSliderVisibility(isChecked);
-            if (MelodyGlobalService.getInstance() != null) {
-                try {
-                    MelodyGlobalService.getInstance().enforceVolumeCap();
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                }
-            }
-            Toast.makeText(this,
-                    isChecked ? "🎧 Volume Limit Enabled (Max " + prefs.getVolumeCapPercent() + "%) 💕"
-                              : "Volume Limit Disabled — full volume allowed",
-                    Toast.LENGTH_SHORT).show();
-        });
-
-        seekBarVolumeCap.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (progress < 10) progress = 10; // Minimum 10%
-                tvVolumeCapLabel.setText(progress + "%");
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                int progress = seekBar.getProgress();
-                if (progress < 10) progress = 10;
-                seekBar.setProgress(progress);
-                prefs.setVolumeCapPercent(progress);
-                tvVolumeCapLabel.setText(progress + "%");
-                // Apply immediately
-                if (MelodyGlobalService.getInstance() != null) {
-                    try {
-                        MelodyGlobalService.getInstance().enforceVolumeCap();
-                    } catch (Throwable t) {
-                        t.printStackTrace();
-                    }
-                }
-                Toast.makeText(ParentZoneActivity.this,
-                        "🎧 Volume cap set to " + progress + "%", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void updateVolumeSliderVisibility(boolean visible) {
-        if (layoutVolumeSlider != null) {
-            layoutVolumeSlider.setVisibility(visible ? View.VISIBLE : View.GONE);
         }
     }
 

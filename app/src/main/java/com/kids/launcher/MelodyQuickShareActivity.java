@@ -59,6 +59,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Dedicated Kid-Friendly Quick Share & Bluetooth Transfer Studio.
@@ -115,6 +117,7 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
 
     private BluetoothAdapter bluetoothAdapter;
     private BroadcastReceiver bluetoothReceiver;
+    private final ExecutorService thumbExecutor = Executors.newFixedThreadPool(3);
 
     // Header Mode Tabs
     private TextView tabModeSend;
@@ -561,7 +564,7 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
 
     private void loadCategoryFiles(String category) {
         currentCategory = category;
-        currentCategoryFiles.clear();
+        List<ShareableFile> loadedList = new ArrayList<>();
 
         ContentResolver cr = getContentResolver();
 
@@ -579,7 +582,7 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
                         if (p != null) {
                             File f = new File(p);
                             if (f.exists()) {
-                                currentCategoryFiles.add(new ShareableFile(f, n != null ? n : f.getName(), "image/*"));
+                                loadedList.add(new ShareableFile(f, n != null ? n : f.getName(), "image/*"));
                             }
                         }
                     }
@@ -600,7 +603,7 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
                         if (p != null) {
                             File f = new File(p);
                             if (f.exists()) {
-                                currentCategoryFiles.add(new ShareableFile(f, n != null ? n : f.getName(), "video/*"));
+                                loadedList.add(new ShareableFile(f, n != null ? n : f.getName(), "video/*"));
                             }
                         }
                     }
@@ -621,7 +624,7 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
                         if (p != null) {
                             File f = new File(p);
                             if (f.exists()) {
-                                currentCategoryFiles.add(new ShareableFile(f, n != null ? n : f.getName(), "audio/*"));
+                                loadedList.add(new ShareableFile(f, n != null ? n : f.getName(), "audio/*"));
                             }
                         }
                     }
@@ -630,6 +633,8 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
             } catch (Exception ignored) {}
         }
 
+        currentCategoryFiles.clear();
+        currentCategoryFiles.addAll(loadedList);
         updateSelectionCount();
         if (fileShareAdapter != null) {
             fileShareAdapter.notifyDataSetChanged();
@@ -781,9 +786,15 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
             return;
         }
         if (name.endsWith(".mp4") || name.endsWith(".mkv") || name.endsWith(".webm") || name.endsWith(".3gp") || name.endsWith(".avi")) {
-            Intent intent = new Intent(this, MelodyVideoActivity.class);
-            intent.putExtra("target_video_path", file.getAbsolutePath());
-            startActivity(intent);
+            try {
+                Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", file);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(uri, "video/*");
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(Intent.createChooser(intent, "Play video"));
+            } catch (Exception e) {
+                Toast.makeText(this, "Could not open video", Toast.LENGTH_SHORT).show();
+            }
             return;
         }
         if (name.endsWith(".mp3") || name.endsWith(".m4a") || name.endsWith(".wav") || name.endsWith(".ogg") || name.endsWith(".flac")) {
@@ -1135,6 +1146,9 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
         if (webDropThread != null) {
             webDropThread.interrupt();
         }
+        try {
+            thumbExecutor.shutdownNow();
+        } catch (Exception ignored) {}
     }
 
     /**
@@ -1154,30 +1168,41 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
             ShareableFile item = currentCategoryFiles.get(position);
             holder.tvName.setText(item.title);
 
+            final String filePath = item.file.getAbsolutePath();
+            holder.ivThumb.setTag(filePath);
+
             if ("photos".equals(currentCategory)) {
                 holder.ivThumb.setVisibility(View.VISIBLE);
                 holder.tvIcon.setVisibility(View.GONE);
-                new Thread(() -> {
+                thumbExecutor.execute(() -> {
                     try {
                         BitmapFactory.Options opts = new BitmapFactory.Options();
                         opts.inSampleSize = 4;
-                        Bitmap bmp = BitmapFactory.decodeFile(item.file.getAbsolutePath(), opts);
+                        Bitmap bmp = BitmapFactory.decodeFile(filePath, opts);
                         if (bmp != null) {
-                            holder.ivThumb.post(() -> holder.ivThumb.setImageBitmap(bmp));
+                            holder.ivThumb.post(() -> {
+                                if (filePath.equals(holder.ivThumb.getTag())) {
+                                    holder.ivThumb.setImageBitmap(bmp);
+                                }
+                            });
                         }
                     } catch (Exception ignored) {}
-                }).start();
+                });
             } else if ("videos".equals(currentCategory)) {
                 holder.ivThumb.setVisibility(View.VISIBLE);
                 holder.tvIcon.setVisibility(View.GONE);
-                new Thread(() -> {
+                thumbExecutor.execute(() -> {
                     try {
-                        Bitmap thumb = ThumbnailUtils.createVideoThumbnail(item.file.getAbsolutePath(), MediaStore.Images.Thumbnails.MICRO_KIND);
+                        Bitmap thumb = ThumbnailUtils.createVideoThumbnail(filePath, MediaStore.Images.Thumbnails.MICRO_KIND);
                         if (thumb != null) {
-                            holder.ivThumb.post(() -> holder.ivThumb.setImageBitmap(thumb));
+                            holder.ivThumb.post(() -> {
+                                if (filePath.equals(holder.ivThumb.getTag())) {
+                                    holder.ivThumb.setImageBitmap(thumb);
+                                }
+                            });
                         }
                     } catch (Exception ignored) {}
-                }).start();
+                });
             } else {
                 holder.ivThumb.setVisibility(View.GONE);
                 holder.tvIcon.setVisibility(View.VISIBLE);
@@ -1193,9 +1218,13 @@ public class MelodyQuickShareActivity extends AppCompatActivity {
             }
 
             holder.itemView.setOnClickListener(v -> {
-                item.isSelected = !item.isSelected;
-                notifyItemChanged(position);
-                updateSelectionCount();
+                int adapterPos = holder.getAdapterPosition();
+                if (adapterPos != RecyclerView.NO_POSITION && adapterPos < currentCategoryFiles.size()) {
+                    ShareableFile sf = currentCategoryFiles.get(adapterPos);
+                    sf.isSelected = !sf.isSelected;
+                    notifyItemChanged(adapterPos);
+                    updateSelectionCount();
+                }
             });
         }
 

@@ -394,7 +394,6 @@ public class MelodyGlobalService extends AccessibilityService {
         setupGlobalAutoBrightness();
         updateBlueLightFilter();
         startHealthReminders();
-        setupVolumeObserver();
     }
 
     public void updateBlueLightFilter() {
@@ -500,57 +499,10 @@ public class MelodyGlobalService extends AccessibilityService {
     private final Runnable volumeEnforceRunnable = this::enforceVolumeCap;
 
     /**
-     * Enforce the volume cap across all audio streams safely.
-     * Called from ContentObserver on every volume change, and also from ParentZoneActivity
-     * when the parent adjusts settings.
+     * Enforce volume cap - no-op as volume cap has been completely removed.
      */
     public void enforceVolumeCap() {
-        if (audioManager == null || prefs == null) return;
-        if (!prefs.isVolumeLimiterEnabled()) return;
-        if (isEnforcingVolume) return;
-
-        isEnforcingVolume = true;
-        try {
-            int capPercent = prefs.getVolumeCapPercent();
-            int[] streams = {
-                    AudioManager.STREAM_MUSIC,
-                    AudioManager.STREAM_RING,
-                    AudioManager.STREAM_NOTIFICATION,
-                    AudioManager.STREAM_ALARM
-            };
-
-            boolean wasCapped = false;
-            for (int stream : streams) {
-                try {
-                    int max = audioManager.getStreamMaxVolume(stream);
-                    if (max <= 0) continue;
-                    int capValue = prefs.getMaxAllowedVolume(audioManager, stream);
-                    int current = audioManager.getStreamVolume(stream);
-                    if (current > capValue) {
-                        audioManager.setStreamVolume(stream, capValue, 0);
-                        wasCapped = true;
-                    }
-                } catch (Throwable t) {
-                    // Prevent SecurityException (e.g. Do Not Disturb policy restriction) or other OEM errors from crashing
-                    Log.w("MelodyGlobalService", "Could not enforce cap on stream " + stream + ": " + t.getMessage());
-                }
-            }
-
-            if (wasCapped) {
-                long now = System.currentTimeMillis();
-                if (now - lastVolumeCapToastTime > 3000) {
-                    lastVolumeCapToastTime = now;
-                    try {
-                        Toast.makeText(getApplicationContext(),
-                                "🎧 Volume capped at " + capPercent + "%! Ask a parent to change it 💕",
-                                Toast.LENGTH_SHORT).show();
-                    } catch (Throwable ignored) {}
-                }
-            }
-        } finally {
-            // Delay unlocking to let system AudioService flush and prevent re-trigger loop
-            volumeHandler.postDelayed(() -> isEnforcingVolume = false, 150);
-        }
+        // Volume cap completely removed. Full volume allowed.
     }
 
     private void restoreStockNavBar() {
@@ -1108,17 +1060,6 @@ public class MelodyGlobalService extends AccessibilityService {
         touchMenuView.findViewById(R.id.btn_action_vol_up).setOnClickListener(v -> {
             if (audioManager != null) {
                 try {
-                    int cap = (prefs != null) ? prefs.getMaxAllowedVolume(audioManager, AudioManager.STREAM_MUSIC) : 15;
-                    int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-                    if (current >= cap) {
-                        if (current > cap) {
-                            try { audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, cap, 0); } catch (Throwable ignored) {}
-                        }
-                        try {
-                            Toast.makeText(getApplicationContext(), "🎧 Ear Protection: Max volume capped at " + (prefs != null ? prefs.getVolumeCapPercent() : 70) + "%! 💕", Toast.LENGTH_SHORT).show();
-                        } catch (Throwable ignored) {}
-                        return;
-                    }
                     audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, 0);
                 } catch (Throwable t) {
                     t.printStackTrace();

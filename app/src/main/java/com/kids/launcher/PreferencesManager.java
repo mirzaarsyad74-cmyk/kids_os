@@ -562,32 +562,28 @@ public class PreferencesManager {
     }
 
     public boolean isVolumeLimiterEnabled() {
-        return prefs.getBoolean(KEY_VOLUME_LIMITER, true);
+        return false;
     }
 
     public void setVolumeLimiterEnabled(boolean enabled) {
-        prefs.edit().putBoolean(KEY_VOLUME_LIMITER, enabled).apply();
+        prefs.edit().putBoolean(KEY_VOLUME_LIMITER, false).apply();
     }
 
     public int getVolumeCapPercent() {
-        return prefs.getInt(KEY_VOLUME_CAP_PERCENT, 70);
+        return 100;
     }
 
     public void setVolumeCapPercent(int percent) {
-        prefs.edit().putInt(KEY_VOLUME_CAP_PERCENT, percent).apply();
+        prefs.edit().putInt(KEY_VOLUME_CAP_PERCENT, 100).apply();
     }
 
     /**
-     * Compute maximum allowable stream volume index according to parental cap settings.
+     * Compute maximum allowable stream volume index (full volume allowed).
      */
     public int getMaxAllowedVolume(android.media.AudioManager audioManager, int stream) {
         if (audioManager == null) return 15;
         try {
-            int max = audioManager.getStreamMaxVolume(stream);
-            if (max <= 0) return 0;
-            if (!isVolumeLimiterEnabled()) return max;
-            int cap = (int) Math.ceil(max * (getVolumeCapPercent() / 100.0f));
-            return Math.max(1, Math.min(max, cap));
+            return audioManager.getStreamMaxVolume(stream);
         } catch (Exception e) {
             return 15;
         }

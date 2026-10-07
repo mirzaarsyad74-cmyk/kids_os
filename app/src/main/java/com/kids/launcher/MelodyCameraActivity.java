@@ -53,7 +53,6 @@ public class MelodyCameraActivity extends AppCompatActivity implements SurfaceHo
     private int currentCameraId = 0; // 0 = back, 1 = front
     private boolean isPreviewRunning = false;
 
-    private MelodyFrameOverlayView frameOverlay;
     private View viewShutterFlash;
     private RelativeLayout layoutPreviewModal;
     private ImageView ivCapturedPhotoPreview;
@@ -63,8 +62,6 @@ public class MelodyCameraActivity extends AppCompatActivity implements SurfaceHo
     private TextView btnFlip;
     private FrameLayout btnShutter;
     private TextView btnBack;
-
-    private TextView chipNone, chipMelody, chipSparkles, chipBerry, chipHearts, chipPolaroid;
     private boolean isTorchActive = false;
 
     private MediaActionSound sound;
@@ -81,7 +78,6 @@ public class MelodyCameraActivity extends AppCompatActivity implements SurfaceHo
         }
 
         initViews();
-        setupFrameChips();
         checkPermissionsAndStart();
     }
 
@@ -97,7 +93,6 @@ public class MelodyCameraActivity extends AppCompatActivity implements SurfaceHo
         surfaceHolder = surfaceView.getHolder();
         surfaceHolder.addCallback(this);
 
-        frameOverlay = findViewById(R.id.melody_frame_overlay);
         viewShutterFlash = findViewById(R.id.view_shutter_flash);
         layoutPreviewModal = findViewById(R.id.layout_photo_preview_modal);
         ivCapturedPhotoPreview = findViewById(R.id.iv_captured_photo_preview);
@@ -127,39 +122,7 @@ public class MelodyCameraActivity extends AppCompatActivity implements SurfaceHo
         }
     }
 
-    private void setupFrameChips() {
-        chipNone = findViewById(R.id.chip_frame_none);
-        chipMelody = findViewById(R.id.chip_frame_melody);
-        chipSparkles = findViewById(R.id.chip_frame_sparkles);
-        chipBerry = findViewById(R.id.chip_frame_berry);
-        chipHearts = findViewById(R.id.chip_frame_hearts);
-        chipPolaroid = findViewById(R.id.chip_frame_polaroid);
 
-        if (chipNone != null) {
-            chipNone.setOnClickListener(v -> selectFrame(MelodyFrameOverlayView.FRAME_NONE, chipNone));
-        }
-        chipMelody.setOnClickListener(v -> selectFrame(MelodyFrameOverlayView.FRAME_MELODY_EARS, chipMelody));
-        chipSparkles.setOnClickListener(v -> selectFrame(MelodyFrameOverlayView.FRAME_SPARKLES_STARS, chipSparkles));
-        chipBerry.setOnClickListener(v -> selectFrame(MelodyFrameOverlayView.FRAME_SWEET_STRAWBERRY, chipBerry));
-        chipHearts.setOnClickListener(v -> selectFrame(MelodyFrameOverlayView.FRAME_HEART_CLOUDS, chipHearts));
-        chipPolaroid.setOnClickListener(v -> selectFrame(MelodyFrameOverlayView.FRAME_POLAROID, chipPolaroid));
-    }
-
-    private void selectFrame(int frameType, TextView selectedChip) {
-        frameOverlay.setFrame(frameType);
-
-        TextView[] chips = {chipNone, chipMelody, chipSparkles, chipBerry, chipHearts, chipPolaroid};
-        for (TextView chip : chips) {
-            if (chip != null) {
-                chip.setBackgroundResource(R.drawable.bg_melody_chip_unselected);
-                chip.setTextColor(Color.parseColor("#831843"));
-            }
-        }
-        if (selectedChip != null) {
-            selectedChip.setBackgroundResource(R.drawable.bg_melody_chip_selected);
-            selectedChip.setTextColor(Color.WHITE);
-        }
-    }
 
     private void checkPermissionsAndStart() {
         String[] perms = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -372,12 +335,8 @@ public class MelodyCameraActivity extends AppCompatActivity implements SurfaceHo
                     orientedBitmap = original;
                 }
 
-                Bitmap composited = orientedBitmap.copy(Bitmap.Config.ARGB_8888, true);
-                // Only composite frame if a filter is selected (not FRAME_NONE)
-                if (frameOverlay.getFrame() != MelodyFrameOverlayView.FRAME_NONE) {
-                    Canvas canvas = new Canvas(composited);
-                    MelodyFrameOverlayView.drawFrameOverlay(canvas, composited.getWidth(), composited.getHeight(), frameOverlay.getFrame());
-                }
+                // Save cleanly without any filter or frame overlay
+                Bitmap composited = orientedBitmap;
 
                 // Save to Gallery directory
                 File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "MelodyCamera");

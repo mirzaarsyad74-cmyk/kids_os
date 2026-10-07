@@ -496,16 +496,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                     if (fromUser && audioManager != null) {
-                        int cap = (prefs != null) ? prefs.getMaxAllowedVolume(audioManager, AudioManager.STREAM_MUSIC) : max;
-                        if (progress > cap) {
-                            progress = cap;
-                            seekBar.setProgress(cap);
-                            try {
-                                Toast.makeText(MainActivity.this,
-                                        "🎧 Ear Protection: Max volume capped at " + (prefs != null ? prefs.getVolumeCapPercent() : 70) + "%! 💕",
-                                        Toast.LENGTH_SHORT).show();
-                            } catch (Throwable ignored) {}
-                        }
                         try {
                             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
                         } catch (Throwable t) {
@@ -828,19 +818,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             if (audioManager != null) {
                 try {
-                    int max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-                    int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-                    int cap = (prefs != null) ? prefs.getMaxAllowedVolume(audioManager, AudioManager.STREAM_MUSIC) : max;
-                    if (current >= cap) {
-                        if (current > cap) {
-                            try { audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, cap, 0); } catch (Throwable ignored) {}
-                        }
-                        try {
-                            Toast.makeText(this, "🎧 Ear Protection: Max volume capped at " + (prefs != null ? prefs.getVolumeCapPercent() : 70) + "%! 💕", Toast.LENGTH_SHORT).show();
-                        } catch (Throwable ignored) {}
-                        showVolumeHud(getCurrentVolumePercent());
-                        return true;
-                    }
                     audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, 0);
                     showVolumeHud(getCurrentVolumePercent());
                 } catch (Throwable t) {
@@ -1088,8 +1065,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     builtIn = new Intent(this, MelodySafeBrowserActivity.class);
                 } else if (MelodyFileManagerActivity.class.getName().equals(app.getActivityName())) {
                     builtIn = new Intent(this, MelodyFileManagerActivity.class);
-                } else if (MelodyVideoActivity.class.getName().equals(app.getActivityName())) {
-                    builtIn = new Intent(this, MelodyVideoActivity.class);
                 } else if (MelodyQuickShareActivity.class.getName().equals(app.getActivityName())) {
                     builtIn = new Intent(this, MelodyQuickShareActivity.class);
                 } else if (MelodyUpdaterActivity.class.getName().equals(app.getActivityName())) {
@@ -1641,16 +1616,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         filesApp.setCategory(prefs.getAppCategory(getPackageName() + ".files", AppModel.CAT_LEARNING));
         allAllowedApps.add(filesApp);
 
-        // Add built-in Video Player ("Videos 🎬")
-        AppModel videoApp = new AppModel(
-                "Videos 🎬",
-                getPackageName(),
-                MelodyVideoActivity.class.getName(),
-                androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_melody_video),
-                true
-        );
-        videoApp.setCategory(prefs.getAppCategory(getPackageName() + ".videos", AppModel.CAT_MEDIA));
-        allAllowedApps.add(videoApp);
 
         // Add built-in Quick Share & Bluetooth ("Quick Share 📡")
         AppModel shareApp = new AppModel(

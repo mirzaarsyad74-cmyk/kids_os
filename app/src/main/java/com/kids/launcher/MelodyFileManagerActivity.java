@@ -38,7 +38,7 @@ import java.util.Locale;
  * - Clean visual explorer for internal tablet storage.
  * - Quick category tabs: All, Downloads, Pictures, Music, Videos, Documents.
  * - Folder navigation with breadcrumb and Up button.
- * - Integrated launch into MelodyGalleryActivity, MelodyMusicActivity, and MelodyVideoActivity.
+ * - Integrated launch into MelodyGalleryActivity and MelodyMusicActivity.
  * - File options: Open, Share, Delete.
  * - Live search/filtering.
  */
@@ -328,13 +328,7 @@ public class MelodyFileManagerActivity extends AppCompatActivity {
             return;
         }
 
-        // Video files -> MelodyVideoActivity
-        if (lower.endsWith(".mp4") || lower.endsWith(".mkv") || lower.endsWith(".webm") || lower.endsWith(".3gp") || lower.endsWith(".avi")) {
-            Intent intent = new Intent(this, MelodyVideoActivity.class);
-            intent.putExtra("target_video_path", item.file.getAbsolutePath());
-            startActivity(intent);
-            return;
-        }
+
 
         // Image files -> MelodyGalleryActivity
         if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp") || lower.endsWith(".gif")) {
