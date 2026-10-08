@@ -167,6 +167,10 @@ public class MelodyGlobalService extends AccessibilityService {
             String clsStr = cls != null ? cls.toString() : "";
 
             if ("com.android.systemui".equals(pkgStr)) {
+                if (clsStr.toLowerCase().contains("recents")) {
+                    openMelodyRecents();
+                    return;
+                }
                 // Lock down stock Android Notification Panel and Quick Settings completely
                 collapseStockStatusBar();
                 performGlobalAction(GLOBAL_ACTION_BACK);

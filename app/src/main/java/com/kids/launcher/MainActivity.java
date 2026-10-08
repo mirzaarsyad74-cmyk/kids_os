@@ -5,7 +5,11 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.app.ActivityManager;
 import android.app.Dialog;
+import android.content.pm.ApplicationInfo;
+import android.util.Log;
+import java.lang.reflect.Method;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -1124,13 +1128,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             toggleControlCenter(false);
         }
 
-        // Auto seed with allowed apps if recent stack is currently empty
-        if (recentApps.isEmpty() && !allAllowedApps.isEmpty()) {
-            for (int i = 0; i < Math.min(4, allAllowedApps.size()); i++) {
-                recentApps.add(allAllowedApps.get(i));
-            }
-        }
-
         populateRecentCards();
 
         layoutRecentsOverlay.setVisibility(View.VISIBLE);
@@ -1191,6 +1188,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         .withEndAction(() -> {
                             layoutRecentAppsContainer.removeView(card);
                             recentApps.remove(app);
+                            closeAppTaskAndBackground(app.getPackageName());
                             if (recentApps.isEmpty()) {
                                 if (tvNoRecents != null) tvNoRecents.setVisibility(View.VISIBLE);
                                 if (btnClearAllRecents != null) {
@@ -1219,6 +1217,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            closeAllAppTasks();
             recentApps.clear();
             if (layoutRecentAppsContainer != null) layoutRecentAppsContainer.removeAllViews();
             if (tvNoRecents != null) tvNoRecents.setVisibility(View.VISIBLE);
@@ -1230,6 +1229,139 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Toast.makeText(MainActivity.this, "🧹 All open windows cleared!", Toast.LENGTH_SHORT).show();
             closeRecentsOverlay();
         }, 260);
+    }
+
+    private void closeAppTaskAndBackground(String packageName) {
+        if (packageName == null || packageName.equals(getPackageName())) return;
+        try {
+            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            if (am != null) {
+                if (!packageName.contains("youtube") && !packageName.contains("morphe")) {
+                    am.killBackgroundProcesses(packageName);
+                }
+                removeTaskByPackage(am, packageName);
+            }
+        } catch (Throwable t) {
+            Log.w("MainActivity", "closeAppTask error: " + t.getMessage());
+        }
+    }
+
+    private void closeAllAppTasks() {
+        try {
+            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            if (am == null) return;
+
+            int myTaskId = getTaskId();
+
+            // 1. Finish caller AppTasks
+            try {
+                List<ActivityManager.AppTask> appTasks = am.getAppTasks();
+                if (appTasks != null) {
+                    for (ActivityManager.AppTask task : appTasks) {
+                        try {
+                            ActivityManager.RecentTaskInfo info = task.getTaskInfo();
+                            if (info != null && (info.id == myTaskId || info.persistentId == myTaskId)) {
+                                continue;
+                            }
+                            task.finishAndRemoveTask();
+                        } catch (Throwable ignored) {}
+                    }
+                }
+            } catch (Throwable ignored) {}
+
+            // 2. Kill background processes for all installed third-party apps
+            PackageManager pm = getPackageManager();
+            List<ApplicationInfo> installed = pm.getInstalledApplications(0);
+            for (ApplicationInfo info : installed) {
+                String pkg = info.packageName;
+                if (!pkg.equals(getPackageName())
+                        && !pkg.equals("com.android.systemui")
+                        && !pkg.contains("inputmethod")
+                        && !pkg.equals("android")
+                        && !pkg.contains("youtube")
+                        && !pkg.contains("morphe")) {
+                    am.killBackgroundProcesses(pkg);
+                }
+            }
+
+            // 3. Remove recent tasks from system recents stack via reflection
+            try {
+                Method removeTaskMethod = null;
+                try {
+                    removeTaskMethod = ActivityManager.class.getMethod("removeTask", int.class);
+                } catch (NoSuchMethodException e) {
+                    try {
+                        removeTaskMethod = ActivityManager.class.getMethod("removeTask", int.class, int.class);
+                    } catch (NoSuchMethodException ignored) {}
+                }
+
+                if (removeTaskMethod != null) {
+                    removeTaskMethod.setAccessible(true);
+                    List<ActivityManager.RecentTaskInfo> recentTasks = am.getRecentTasks(100, ActivityManager.RECENT_IGNORE_UNAVAILABLE);
+                    if (recentTasks != null) {
+                        for (ActivityManager.RecentTaskInfo rti : recentTasks) {
+                            int id = rti.persistentId > 0 ? rti.persistentId : rti.id;
+                            if (id > 0 && id != myTaskId) {
+                                try {
+                                    if (removeTaskMethod.getParameterTypes().length == 1) {
+                                        removeTaskMethod.invoke(am, id);
+                                    } else {
+                                        removeTaskMethod.invoke(am, id, 1 /* REMOVE_TASK_KILL_PROCESS */);
+                                    }
+                                } catch (Throwable ignored) {}
+                            }
+                        }
+                    }
+                }
+            } catch (Throwable t) {
+                Log.w("MainActivity", "System recents reflection error: " + t.getMessage());
+            }
+        } catch (Throwable t) {
+            Log.w("MainActivity", "closeAllAppTasks error: " + t.getMessage());
+        }
+    }
+
+    private void removeTaskByPackage(ActivityManager am, String packageName) {
+        if (am == null || packageName == null) return;
+        try {
+            int myTaskId = getTaskId();
+            Method removeTaskMethod = null;
+            try {
+                removeTaskMethod = ActivityManager.class.getMethod("removeTask", int.class);
+            } catch (NoSuchMethodException e) {
+                try {
+                    removeTaskMethod = ActivityManager.class.getMethod("removeTask", int.class, int.class);
+                } catch (NoSuchMethodException ignored) {}
+            }
+
+            if (removeTaskMethod != null) {
+                removeTaskMethod.setAccessible(true);
+                List<ActivityManager.RecentTaskInfo> recentTasks = am.getRecentTasks(100, ActivityManager.RECENT_IGNORE_UNAVAILABLE);
+                if (recentTasks != null) {
+                    for (ActivityManager.RecentTaskInfo rti : recentTasks) {
+                        int id = rti.persistentId > 0 ? rti.persistentId : rti.id;
+                        if (id > 0 && id != myTaskId) {
+                            boolean matches = false;
+                            if (rti.baseIntent != null && rti.baseIntent.getComponent() != null) {
+                                matches = packageName.equals(rti.baseIntent.getComponent().getPackageName());
+                            }
+                            if (rti.origActivity != null && packageName.equals(rti.origActivity.getPackageName())) {
+                                matches = true;
+                            }
+                            if (matches) {
+                                try {
+                                    if (removeTaskMethod.getParameterTypes().length == 1) {
+                                        removeTaskMethod.invoke(am, id);
+                                    } else {
+                                        removeTaskMethod.invoke(am, id, 1);
+                                    }
+                                } catch (Throwable ignored) {}
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
     }
 
     private void setupCategoryChips() {
