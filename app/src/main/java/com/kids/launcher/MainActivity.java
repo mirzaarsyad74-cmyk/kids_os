@@ -1278,6 +1278,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         && !pkg.equals("com.android.systemui")
                         && !pkg.contains("inputmethod")
                         && !pkg.equals("android")
+                        && !pkg.equals("com.google.android.gms")
+                        && !pkg.equals("com.android.vending")
                         && !pkg.contains("youtube")
                         && !pkg.contains("morphe")) {
                     am.killBackgroundProcesses(pkg);

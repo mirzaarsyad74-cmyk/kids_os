@@ -144,16 +144,19 @@ public class MelodyGlobalService extends AccessibilityService {
             }
         }
 
-        // Content scan: detect purchase UI inside Play Store or Google Play Services
+        // Content scan: detect purchase UI inside Play Store ONLY
         if (eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
                 || eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            if ("com.android.vending".equals(pkgStr) || "com.google.android.gms".equals(pkgStr)) {
+            if ("com.android.vending".equals(pkgStr)) {
                 AccessibilityNodeInfo root = getRootInActiveWindow();
                 if (root != null) {
                     try {
-                        if (nodeTreeContainsPurchaseUI(root)) {
-                            blockPurchaseAndGoBack();
-                            return;
+                        CharSequence rootPkg = root.getPackageName();
+                        if (rootPkg != null && "com.android.vending".equals(rootPkg.toString())) {
+                            if (nodeTreeContainsPurchaseUI(root)) {
+                                blockPurchaseAndGoBack();
+                                return;
+                            }
                         }
                     } finally {
                         root.recycle();
@@ -173,7 +176,6 @@ public class MelodyGlobalService extends AccessibilityService {
                 }
                 // Lock down stock Android Notification Panel and Quick Settings completely
                 collapseStockStatusBar();
-                performGlobalAction(GLOBAL_ACTION_BACK);
                 return;
             } else if (!pkgStr.contains("inputmethod")) {
                 boolean isHomeDesktop = "com.kids.launcher".equals(pkgStr)

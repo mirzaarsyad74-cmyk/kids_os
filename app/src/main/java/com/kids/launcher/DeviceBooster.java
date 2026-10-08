@@ -47,6 +47,8 @@ public class DeviceBooster {
                             && !pkg.contains("inputmethod")
                             && !pkg.equals("android")
                             && !pkg.equals("com.google.android.inputmethod.latin")
+                            && !pkg.equals("com.google.android.gms")
+                            && !pkg.equals("com.android.vending")
                             && !pkg.contains("youtube")
                             && !pkg.contains("morphe")) {
                         am.killBackgroundProcesses(pkg);
