@@ -1,8 +1,8 @@
 {
-  "tag_name": "v1.0.18",
+  "tag_name": "v1.0.20",
   "target_commitish": "main",
-  "name": "v1.0.18 — Fix Quick Share Crash & Polish Google Stitch Aesthetics",
-  "body": "## 🌸 Kids OS v1.0.18 Release Notes\n\n### ⚡ Quick Share Crash Fixed & Tested\n- **Resolved FrameLayout ClassCastException**: Fixed a crash caused by `tv_share_file_selected` being styled as a FrameLayout checkmark badge while the Java ViewHolder was expecting a `TextView`, which previously triggered an ANR freeze on launch.\n- **Uncaught Exception Forwarding**: Properly delegated unhandled exceptions to the system default handler rather than silently deadlocking the main looper.\n- **Direct Camera Directory Scanning**: Enhanced `loadCategoryFiles` to scan `Pictures/MelodyCamera` and `DCIM/Camera` directly alongside MediaStore so kid artwork and photos are instantly discoverable.\n- **Google Stitch Kawaii Polish**: Polished Squircle card gloss so pastel CardView macaron backgrounds shine cleanly, refined Parent Zone card borders and contrast.",
+  "name": "v1.0.20 — Fix Recents Clear All & System Tasks",
+  "body": "## 🌸 Kids OS v1.0.20 Release Notes\n\n### 🧹 Recents Clear All & System Stack Fixes\n- **Fixed Recents Re-populating Bug**: Completely eliminated auto-seeding logic that was mistakenly re-injecting 4 apps into the recents overlay immediately after clearing.\n- **Full OS System Task Removal**: Integrated reflection-based `ActivityManager.removeTask()` and `finishAndRemoveTask()` to ensure tasks and background processes are completely eliminated from the device when Clear All Windows is pressed.\n- **Individual Dismissal Process Killer**: Swiping or clicking dismiss on individual recent cards now actively terminates the corresponding background process.\n- **Stock Recents Interception**: Ensured attempts to trigger raw Android system recents are immediately routed to our kid-safe pastel-pink My Melody recents interface.",
   "draft": false,
   "prerelease": false
 }
