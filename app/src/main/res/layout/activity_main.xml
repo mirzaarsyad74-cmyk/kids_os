@@ -287,15 +287,28 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
+                <!-- Recent Apps Button -->
+                <ImageButton
+                    android:id="@+id/btn_iwawa_recents"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_iwawa_circle_btn"
+                    android:src="@drawable/ic_iwawa_recents"
+                    android:scaleType="centerInside"
+                    android:padding="9dp"
+                    android:elevation="4dp"
+                    android:contentDescription="Open Recents" />
+
                 <!-- Quick Camera Launcher Button -->
                 <ImageButton
                     android:id="@+id/btn_quick_camera"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
+                    android:layout_marginStart="8dp"
                     android:background="@drawable/bg_quick_dock_circle"
-                    android:src="@drawable/ic_melody_camera"
+                    android:src="@drawable/ic_dock_camera"
                     android:scaleType="centerInside"
-                    android:padding="5dp"
+                    android:padding="6dp"
                     android:elevation="4dp"
                     android:contentDescription="Launch Camera" />
 
@@ -304,7 +317,7 @@
                     android:id="@+id/btn_quick_youtube"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="8dp"
                     android:background="@drawable/bg_quick_dock_circle"
                     android:src="@drawable/ic_youtube_official"
                     android:scaleType="centerInside"
@@ -317,7 +330,7 @@
                     android:id="@+id/btn_quick_ytkids"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="8dp"
                     android:background="@drawable/bg_quick_dock_circle"
                     android:src="@drawable/ic_ytkids_official"
                     android:scaleType="centerInside"

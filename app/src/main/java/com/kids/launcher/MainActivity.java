@@ -274,6 +274,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }));
         }
 
+        View btnIwawaRecents = findViewById(R.id.btn_iwawa_recents);
+        if (btnIwawaRecents != null) {
+            btnIwawaRecents.setOnClickListener(v -> toggleRecentsOverlay());
+        }
+
         if (btnQuickCamera != null) {
             btnQuickCamera.setOnClickListener(v -> {
                 Intent intent = new Intent(MainActivity.this, MelodyCameraActivity.class);
@@ -284,10 +289,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         if (btnQuickYoutube != null) {
-            try {
-                btnQuickYoutube.setImageDrawable(getPackageManager().getApplicationIcon("app.morphe.android.youtube"));
-            } catch (Exception ignored) {}
-            btnQuickYoutube.setOnClickListener(v -> launchAppByPackage("app.morphe.android.youtube"));
+            btnQuickYoutube.setImageResource(R.drawable.ic_youtube_official);
+            btnQuickYoutube.setOnClickListener(v -> {
+                if (getPackageManager().getLaunchIntentForPackage("app.morphe.android.youtube") != null) {
+                    launchAppByPackage("app.morphe.android.youtube");
+                } else {
+                    launchAppByPackage("com.google.android.youtube");
+                }
+            });
         }
 
         if (btnQuickYtKids != null) {
@@ -1551,26 +1560,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (Exception ignored) {}
     }
 
-    private void ensureMelodyKeyboardEnabled() {
-        try {
-            String myIme = getPackageName() + "/" + MelodyKeyboardService.class.getName();
-            String enabledImes = android.provider.Settings.Secure.getString(getContentResolver(),
-                    android.provider.Settings.Secure.ENABLED_INPUT_METHODS);
-            if (enabledImes == null || !enabledImes.contains(myIme)) {
-                String updated = (enabledImes == null || enabledImes.isEmpty()) ? myIme : enabledImes + ":" + myIme;
-                android.provider.Settings.Secure.putString(getContentResolver(),
-                        android.provider.Settings.Secure.ENABLED_INPUT_METHODS, updated);
-            }
-            android.provider.Settings.Secure.putString(getContentResolver(),
-                    android.provider.Settings.Secure.DEFAULT_INPUT_METHOD, myIme);
-        } catch (Throwable ignored) {}
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
         ensureMelodyGlobalServiceEnabled();
-        ensureMelodyKeyboardEnabled();
         setupNavBarAutoHide();
 
         // At launcher: auto hide floating battery (launcher top status bar has its own battery gauge)

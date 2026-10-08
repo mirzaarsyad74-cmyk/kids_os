@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Camera Body (Rounded Pink Plaque with Top Viewfinder Bump) -->
+    <path
+        android:fillColor="#EC4899"
+        android:pathData="M9,3 L7.17,5 H4 C2.9,5 2,5.9 2,7 V18 C2,19.1 2.9,20 4,20 H20 C21.1,20 22,19.1 22,18 V7 C22,5.9 21.1,5 20,5 H16.83 L15,3 H9 Z" />
+
+    <!-- Cute Top Shutter Button -->
+    <path
+        android:fillColor="#F472B6"
+        android:pathData="M4.5,3.8 C4.5,3.4 4.8,3.1 5.2,3.1 H6.8 C7.2,3.1 7.5,3.4 7.5,3.8 V5 H4.5 Z" />
+
+    <!-- Outer Lens Ring (Crisp White) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,13.5m-4.5,0a4.5,4.5 0 1,0 9,0a4.5,4.5 0 1,0 -9,0" />
+
+    <!-- Inner Camera Lens Glass (Deep Slate) -->
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M12,13.5m-3.2,0a3.2,3.2 0 1,0 6.4,0a3.2,3.2 0 1,0 -6.4,0" />
+
+    <!-- Cute Specular Lens Reflection (White Highlight Dot) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M10.8,12.3m-1,0a1,1 0 1,0 2,0a1,1 0 1,0 -2,0" />
+
+    <!-- Flash / Viewfinder Lamp (Warm Yellow) -->
+    <path
+        android:fillColor="#FDE047"
+        android:pathData="M17.5,7.8m-1.2,0a1.2,1.2 0 1,0 2.4,0a1.2,1.2 0 1,0 -2.4,0" />
+
+</vector>
