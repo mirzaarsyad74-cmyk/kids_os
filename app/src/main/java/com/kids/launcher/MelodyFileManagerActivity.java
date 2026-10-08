@@ -293,24 +293,27 @@ public class MelodyFileManagerActivity extends AppCompatActivity {
 
     private void updateStorageSummary() {
         try {
-            StatFs stat = new StatFs(Environment.getExternalStorageDirectory().getPath());
-            long blockSize = stat.getBlockSizeLong();
-            long totalBlocks = stat.getBlockCountLong();
-            long availableBlocks = stat.getAvailableBlocksLong();
-
-            long totalBytes = totalBlocks * blockSize;
-            long freeBytes = availableBlocks * blockSize;
-            long usedBytes = totalBytes - freeBytes;
-
-            double totalGb = totalBytes / (1024.0 * 1024.0 * 1024.0);
-            double freeGb = freeBytes / (1024.0 * 1024.0 * 1024.0);
-            double usedGb = usedBytes / (1024.0 * 1024.0 * 1024.0);
-
-            tvStorageSummary.setText(String.format(Locale.getDefault(),
-                    "💾 Storage: %.1f GB Free of %.1f GB (%.1f GB used) 🌸", freeGb, totalGb, usedGb));
+            TrueHardwareHelper.StorageInfo storage = TrueHardwareHelper.getTrueStorageInfo();
+            tvStorageSummary.setText(storage.unmaskedSummary);
+            tvStorageSummary.setOnClickListener(v -> showHardwareDetailsDialog());
         } catch (Exception e) {
             tvStorageSummary.setText("💾 Internal Storage 🌸");
         }
+    }
+
+    private void showHardwareDetailsDialog() {
+        TrueHardwareHelper.HardwareInfo info = TrueHardwareHelper.getHardwareDiagnostics();
+        new AlertDialog.Builder(this)
+                .setTitle("🌸 True Tablet Hardware (Unmasked) 🌸")
+                .setMessage("• Physical Flash: " + info.physicalStorage + "\n"
+                        + "• User Storage Partition: " + info.partitionStorage + "\n"
+                        + "• Real Free Space: " + info.freeStorage + " available\n"
+                        + "• Physical Memory: " + info.physicalRam + "\n"
+                        + "• CPU Architecture: " + info.cpuArch + "\n"
+                        + "• Base Operating System: " + info.realOsVersion + "\n\n"
+                        + "ℹ️ Note: Manufacturer firmware spoofing has been unmasked to protect your device from phantom storage errors.")
+                .setPositiveButton("Got it 💖", null)
+                .show();
     }
 
     private void openFile(FileItem item) {
