@@ -128,7 +128,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="🌐 Block Internet"
+                            android:text="🌐 Block Internet (Browsers)"
                             android:textColor="#FFFFFF"
                             android:textSize="12sp" />
 
@@ -138,6 +138,63 @@
                             android:layout_height="wrap_content"
                             app:thumbTint="#FF2A85"
                             app:trackTint="#A855F7" />
+                    </LinearLayout>
+
+                    <!-- App Internet Firewall Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="6dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="🛡️ App Internet Firewall"
+                            android:textColor="#F472B6"
+                            android:textStyle="bold"
+                            android:textSize="12sp" />
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/switch_firewall_master"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:thumbTint="#10B981"
+                            app:trackTint="#059669" />
+                    </LinearLayout>
+
+                    <!-- Quick Firewall Action Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <Button
+                            android:id="@+id/btn_fw_block_all_games"
+                            android:layout_width="0dp"
+                            android:layout_height="32dp"
+                            android:layout_weight="1"
+                            android:text="🎮 Cut Games Internet"
+                            android:textColor="#FFFFFF"
+                            android:textSize="10sp"
+                            android:backgroundTint="#831843"
+                            android:paddingHorizontal="4dp"
+                            android:layout_marginEnd="4dp" />
+
+                        <Button
+                            android:id="@+id/btn_fw_allow_all"
+                            android:layout_width="0dp"
+                            android:layout_height="32dp"
+                            android:layout_weight="1"
+                            android:text="🌐 Allow All Internet"
+                            android:textColor="#FFFFFF"
+                            android:textSize="10sp"
+                            android:backgroundTint="#059669"
+                            android:paddingHorizontal="4dp" />
                     </LinearLayout>
 
                     <View

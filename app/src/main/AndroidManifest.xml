@@ -182,6 +182,16 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
+        <!-- Melody App Internet Firewall Service -->
+        <service
+            android:name=".MelodyFirewallService"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
+
         <!-- In-App GitHub OTA Updater Activity -->
         <activity
             android:name=".MelodyUpdaterActivity"

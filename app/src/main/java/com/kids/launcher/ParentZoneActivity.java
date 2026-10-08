@@ -50,6 +50,9 @@ public class ParentZoneActivity extends AppCompatActivity {
     private EditText etSearchApps;
     private SwitchCompat switchLockGames;
     private SwitchCompat switchLockBrowsers;
+    private SwitchCompat switchFirewallMaster;
+    private Button btnFwBlockAllGames;
+    private Button btnFwAllowAll;
     private SwitchCompat switchBedtime;
     private SwitchCompat switchEyeBreak;
     private SwitchCompat switchAutoBatterySaver;
@@ -122,6 +125,9 @@ public class ParentZoneActivity extends AppCompatActivity {
 
         switchLockGames = findViewById(R.id.switch_lock_games);
         switchLockBrowsers = findViewById(R.id.switch_lock_browsers);
+        switchFirewallMaster = findViewById(R.id.switch_firewall_master);
+        btnFwBlockAllGames = findViewById(R.id.btn_fw_block_all_games);
+        btnFwAllowAll = findViewById(R.id.btn_fw_allow_all);
         switchBedtime = findViewById(R.id.switch_bedtime);
         switchEyeBreak = findViewById(R.id.switch_eye_break);
         switchAutoBatterySaver = findViewById(R.id.switch_auto_battery_saver);
@@ -211,6 +217,45 @@ public class ParentZoneActivity extends AppCompatActivity {
             prefs.setLockBrowsers(isChecked);
             Toast.makeText(this, isChecked ? "Web browsing locked 🚫" : "Web browsing allowed", Toast.LENGTH_SHORT).show();
         });
+
+        // App Internet Firewall Controls
+        if (switchFirewallMaster != null) {
+            switchFirewallMaster.setChecked(prefs.isFirewallEnabled());
+            switchFirewallMaster.setOnCheckedChangeListener((b, isChecked) -> {
+                prefs.setFirewallEnabled(isChecked);
+                MelodyFirewallService.startOrUpdate(this);
+                if (adapter != null) adapter.notifyDataSetChanged();
+                Toast.makeText(this, isChecked ? "🛡️ App Firewall ENABLED! 🌸" : "App Firewall disabled", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (btnFwBlockAllGames != null) {
+            btnFwBlockAllGames.setOnClickListener(v -> {
+                prefs.setFirewallEnabled(true);
+                if (switchFirewallMaster != null) switchFirewallMaster.setChecked(true);
+                Set<String> blocked = prefs.getFirewallBlockedPackages();
+                int count = 0;
+                for (AppModel app : allApps) {
+                    if (AppModel.CAT_GAMES.equals(app.getCategory())) {
+                        blocked.add(app.getPackageName());
+                        count++;
+                    }
+                }
+                prefs.setFirewallBlockedPackages(blocked);
+                MelodyFirewallService.startOrUpdate(this);
+                if (adapter != null) adapter.notifyDataSetChanged();
+                Toast.makeText(this, "🎮 Internet blocked for all " + count + " games (Offline Mode)! 🌸", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (btnFwAllowAll != null) {
+            btnFwAllowAll.setOnClickListener(v -> {
+                prefs.setFirewallBlockedPackages(new java.util.HashSet<>());
+                MelodyFirewallService.startOrUpdate(this);
+                if (adapter != null) adapter.notifyDataSetChanged();
+                Toast.makeText(this, "🌐 Internet allowed for all apps! 🌸", Toast.LENGTH_SHORT).show();
+            });
+        }
 
         switchBedtime.setChecked(prefs.isBedtimeEnabled());
         switchBedtime.setOnCheckedChangeListener((b, isChecked) -> {
@@ -644,7 +689,7 @@ public class ParentZoneActivity extends AppCompatActivity {
 
         for (ResolveInfo resolveInfo : pkgAppsList) {
             String pkg = resolveInfo.activityInfo.packageName;
-            if (pkg.equals(myPackage)) continue;
+            if (pkg.equals(myPackage) || "com.android.vending".equals(pkg)) continue;
 
             String label = resolveInfo.loadLabel(pm).toString();
             String activity = resolveInfo.activityInfo.name;

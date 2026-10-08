@@ -61,6 +61,24 @@ public class ParentAppAdapter extends RecyclerView.Adapter<ParentAppAdapter.View
             updateLockBadge(holder.btnLockApp, newLock);
         });
 
+        // Internet Firewall toggle button
+        boolean isNetBlocked = prefs.isPackageInternetBlocked(app.getPackageName());
+        updateWifiBadge(holder.btnWifiApp, isNetBlocked);
+        holder.btnWifiApp.setOnClickListener(v -> {
+            boolean newBlocked = !prefs.isPackageInternetBlocked(app.getPackageName());
+            prefs.setPackageInternetBlocked(app.getPackageName(), newBlocked);
+            // Auto-enable master firewall switch if parent blocks an app
+            if (newBlocked && !prefs.isFirewallEnabled()) {
+                prefs.setFirewallEnabled(true);
+            }
+            updateWifiBadge(holder.btnWifiApp, newBlocked);
+            MelodyFirewallService.startOrUpdate(context);
+            Toast.makeText(context,
+                    newBlocked ? "🚫 Internet BLOCKED for " + app.getLabel() + " (Offline Only) 🌸"
+                               : "🌐 Internet ALLOWED for " + app.getLabel() + " 🌸",
+                    Toast.LENGTH_SHORT).show();
+        });
+
         // Uninstall button
         if (app.getPackageName().equals(context.getPackageName())) {
             holder.btnUninstallApp.setVisibility(View.GONE);
@@ -121,6 +139,19 @@ public class ParentAppAdapter extends RecyclerView.Adapter<ParentAppAdapter.View
         }
     }
 
+    private void updateWifiBadge(TextView btn, boolean blocked) {
+        if (btn == null) return;
+        if (blocked) {
+            btn.setText("🚫 No Net");
+            btn.setBackgroundResource(R.drawable.bg_melody_chip_selected);
+            btn.setTextColor(android.graphics.Color.WHITE);
+        } else {
+            btn.setText("🌐 Net OK");
+            btn.setBackgroundResource(R.drawable.bg_melody_chip_unselected);
+            btn.setTextColor(android.graphics.Color.parseColor("#059669"));
+        }
+    }
+
     private void updateCategoryBadgeText(TextView tv, String cat) {
         if (AppModel.CAT_GAMES.equals(cat)) {
             tv.setText("🎮 Games ▾");
@@ -171,6 +202,7 @@ public class ParentAppAdapter extends RecyclerView.Adapter<ParentAppAdapter.View
         final TextView tvPackage;
         final TextView tvCategoryBadge;
         final TextView btnLockApp;
+        final TextView btnWifiApp;
         final TextView btnUninstallApp;
         final SwitchCompat switchAllow;
 
@@ -181,6 +213,7 @@ public class ParentAppAdapter extends RecyclerView.Adapter<ParentAppAdapter.View
             tvPackage = itemView.findViewById(R.id.tv_parent_package_name);
             tvCategoryBadge = itemView.findViewById(R.id.tv_parent_app_category_badge);
             btnLockApp = itemView.findViewById(R.id.btn_lock_app);
+            btnWifiApp = itemView.findViewById(R.id.btn_wifi_app);
             btnUninstallApp = itemView.findViewById(R.id.btn_uninstall_app);
             switchAllow = itemView.findViewById(R.id.switch_allow_app);
         }

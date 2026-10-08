@@ -204,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setupBatteryReceiver();
         setupWifiReceiver();
         prewarmWebViewInBackground();
+        MelodyFirewallService.startOrUpdate(this);
 
         tvAvatarBadge.setText(prefs.getAvatar());
         tvAvatarBadge.setOnClickListener(v -> showAvatarPicker());
@@ -1633,7 +1634,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         for (ResolveInfo resolveInfo : pkgAppsList) {
             String pkg = resolveInfo.activityInfo.packageName;
-            if ("com.y8.barbiecore".equals(pkg) || pkg.toLowerCase(Locale.US).contains("iwawa")) continue; // Never load Barbiecore or iWawa
+            if ("com.y8.barbiecore".equals(pkg) || pkg.toLowerCase(Locale.US).contains("iwawa") || "com.android.vending".equals(pkg)) continue; // Never load Barbiecore, iWawa, or Play Store
 
             // Suppress stock AOSP duplicates if using cute Melody versions
             if ("com.android.calculator2".equals(pkg) || "com.android.deskclock".equals(pkg)

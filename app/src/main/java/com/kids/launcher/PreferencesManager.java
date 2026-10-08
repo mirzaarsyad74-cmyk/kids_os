@@ -588,4 +588,39 @@ public class PreferencesManager {
             return 15;
         }
     }
+
+    // --- App Internet Firewall ---
+    private static final String KEY_FIREWALL_ENABLED = "firewall_enabled";
+    private static final String KEY_FIREWALL_BLOCKED_PACKAGES = "firewall_blocked_packages";
+
+    public boolean isFirewallEnabled() {
+        return prefs.getBoolean(KEY_FIREWALL_ENABLED, false);
+    }
+
+    public void setFirewallEnabled(boolean enabled) {
+        prefs.edit().putBoolean(KEY_FIREWALL_ENABLED, enabled).apply();
+    }
+
+    public Set<String> getFirewallBlockedPackages() {
+        return new HashSet<>(prefs.getStringSet(KEY_FIREWALL_BLOCKED_PACKAGES, new HashSet<>()));
+    }
+
+    public void setFirewallBlockedPackages(Set<String> pkgs) {
+        prefs.edit().putStringSet(KEY_FIREWALL_BLOCKED_PACKAGES, pkgs).apply();
+    }
+
+    public boolean isPackageInternetBlocked(String pkg) {
+        if (!isFirewallEnabled()) return false;
+        return getFirewallBlockedPackages().contains(pkg);
+    }
+
+    public void setPackageInternetBlocked(String pkg, boolean blocked) {
+        Set<String> set = getFirewallBlockedPackages();
+        if (blocked) {
+            set.add(pkg);
+        } else {
+            set.remove(pkg);
+        }
+        setFirewallBlockedPackages(set);
+    }
 }
