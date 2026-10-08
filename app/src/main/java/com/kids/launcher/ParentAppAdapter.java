@@ -157,18 +157,18 @@ public class ParentAppAdapter extends RecyclerView.Adapter<ParentAppAdapter.View
             tv.setText("🎮 Games ▾");
         } else if (AppModel.CAT_CREATIVE.equals(cat)) {
             tv.setText("🎨 Creative ▾");
-        } else if (AppModel.CAT_MEDIA.equals(cat)) {
-            tv.setText("🎵 Media ▾");
-        } else if (AppModel.CAT_LEARNING.equals(cat)) {
-            tv.setText("📚 Learning ▾");
+        } else if (AppModel.CAT_ENTERTAINMENT.equals(cat) || "MEDIA".equals(cat)) {
+            tv.setText("🎬 Entertainment ▾");
+        } else if (AppModel.CAT_TOOLS.equals(cat) || "LEARNING".equals(cat)) {
+            tv.setText("🛠️ Tools ▾");
         } else {
             tv.setText("🎮 Games ▾");
         }
     }
 
     private void showCategoryPickerDialog(AppModel app, ViewHolder holder) {
-        final String[] categories = {"🎮 Games", "🎨 Art & Creative", "🎵 Music & Media", "📚 Learn & Study"};
-        final String[] catKeys = {AppModel.CAT_GAMES, AppModel.CAT_CREATIVE, AppModel.CAT_MEDIA, AppModel.CAT_LEARNING};
+        final String[] categories = {"🎮 Games", "🎨 Art & Creative", "🎬 Entertainment", "🛠️ Tools"};
+        final String[] catKeys = {AppModel.CAT_GAMES, AppModel.CAT_CREATIVE, AppModel.CAT_ENTERTAINMENT, AppModel.CAT_TOOLS};
 
         int selectedIdx = 0;
         for (int i = 0; i < catKeys.length; i++) {

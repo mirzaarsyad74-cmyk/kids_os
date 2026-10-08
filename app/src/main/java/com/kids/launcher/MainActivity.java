@@ -92,7 +92,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView tvClock;
     private TextView tvDate;
     private LinearLayout layoutPageDots;
-    private ImageButton btnIwawaBack;
+    private ImageButton btnQuickCamera;
+    private ImageButton btnQuickYoutube;
+    private ImageButton btnQuickYtKids;
     private ImageButton btnIwawaMenu;
     private GridLayoutManager gridLayoutManager;
     private MelodyWifiView ivWifiStatus;
@@ -146,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float touchDownX = 0f;
 
     private RecyclerView rvKidsApps;
-    private TextView chipAll, chipGames, chipCreative, chipMedia, chipLearning;
+    private TextView chipAll, chipGames, chipEntertainment, chipTools, chipCreative;
     private String currentCategory = AppModel.CAT_ALL;
 
     private AudioManager audioManager;
@@ -256,8 +258,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         tvDate = findViewById(R.id.tv_date);
         tvChildName = findViewById(R.id.tv_child_name);
         layoutPageDots = findViewById(R.id.layout_page_dots);
-        btnIwawaBack = findViewById(R.id.btn_iwawa_back);
         btnIwawaMenu = findViewById(R.id.btn_iwawa_menu);
+        btnQuickCamera = findViewById(R.id.btn_quick_camera);
+        btnQuickYoutube = findViewById(R.id.btn_quick_youtube);
+        btnQuickYtKids = findViewById(R.id.btn_quick_ytkids);
 
         if (tvChildName != null) {
             tvChildName.setText("Irdina");
@@ -270,15 +274,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }));
         }
 
-        if (btnIwawaBack != null) {
-            btnIwawaBack.setOnClickListener(v -> showPinDialog(() -> {
-                finish();
-            }));
+        if (btnQuickCamera != null) {
+            btnQuickCamera.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, MelodyCameraActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                overridePendingTransition(R.anim.melody_app_open_enter, R.anim.melody_app_open_exit);
+            });
         }
 
-        View btnIwawaRecents = findViewById(R.id.btn_iwawa_recents);
-        if (btnIwawaRecents != null) {
-            btnIwawaRecents.setOnClickListener(v -> toggleRecentsOverlay());
+        if (btnQuickYoutube != null) {
+            try {
+                btnQuickYoutube.setImageDrawable(getPackageManager().getApplicationIcon("app.morphe.android.youtube"));
+            } catch (Exception ignored) {}
+            btnQuickYoutube.setOnClickListener(v -> launchAppByPackage("app.morphe.android.youtube"));
+        }
+
+        if (btnQuickYtKids != null) {
+            try {
+                btnQuickYtKids.setImageDrawable(getPackageManager().getApplicationIcon("com.google.android.apps.youtube.kids"));
+            } catch (Exception ignored) {}
+            btnQuickYtKids.setOnClickListener(v -> launchAppByPackage("com.google.android.apps.youtube.kids"));
         }
 
         View layoutKidProfile = findViewById(R.id.layout_kid_profile);
@@ -335,9 +351,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         chipAll = findViewById(R.id.chip_all);
         chipGames = findViewById(R.id.chip_games);
+        chipEntertainment = findViewById(R.id.chip_entertainment);
+        chipTools = findViewById(R.id.chip_tools);
         chipCreative = findViewById(R.id.chip_creative);
-        chipMedia = findViewById(R.id.chip_media);
-        chipLearning = findViewById(R.id.chip_learning);
 
         View btnBoostRam = findViewById(R.id.btn_boost_ram);
         if (btnBoostRam != null) {
@@ -1101,6 +1117,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    private void launchAppByPackage(String packageName) {
+        try {
+            Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageName);
+            if (launchIntent != null) {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                startActivity(launchIntent);
+                overridePendingTransition(R.anim.melody_app_open_enter, R.anim.melody_app_open_exit);
+            } else {
+                Toast.makeText(this, "App is not installed", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Could not open app", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void addRecentApp(AppModel app) {
         if (app == null) return;
         for (int i = 0; i < recentApps.size(); i++) {
@@ -1369,19 +1400,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void setupCategoryChips() {
         if (chipAll == null) return;
-        if (chipGames != null) {
-            chipGames.setText("🎮 Games");
-        }
         chipAll.setOnClickListener(v -> selectCategory(AppModel.CAT_ALL, chipAll));
         if (chipGames != null) chipGames.setOnClickListener(v -> selectCategory(AppModel.CAT_GAMES, chipGames));
+        if (chipEntertainment != null) chipEntertainment.setOnClickListener(v -> selectCategory(AppModel.CAT_ENTERTAINMENT, chipEntertainment));
+        if (chipTools != null) chipTools.setOnClickListener(v -> selectCategory(AppModel.CAT_TOOLS, chipTools));
         if (chipCreative != null) chipCreative.setOnClickListener(v -> selectCategory(AppModel.CAT_CREATIVE, chipCreative));
-        if (chipMedia != null) chipMedia.setOnClickListener(v -> selectCategory(AppModel.CAT_MEDIA, chipMedia));
-        if (chipLearning != null) chipLearning.setOnClickListener(v -> selectCategory(AppModel.CAT_LEARNING, chipLearning));
     }
 
     private void selectCategory(String category, TextView selectedChip) {
         currentCategory = category;
-        TextView[] chips = {chipAll, chipGames, chipCreative, chipMedia, chipLearning};
+        TextView[] chips = {chipAll, chipGames, chipEntertainment, chipTools, chipCreative};
         for (TextView chip : chips) {
             if (chip != null) {
                 if (chip == selectedChip) {
@@ -1403,8 +1431,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 displayedApps.add(app);
             }
         }
+        // Auto sort alphabetically by app name (A-Z)
+        Collections.sort(displayedApps, (a, b) -> a.getLabel().compareToIgnoreCase(b.getLabel()));
         if (adapter != null) {
             adapter.notifyDataSetChanged();
+        }
+        if (rvKidsApps != null) {
+            rvKidsApps.scrollToPosition(0);
         }
         setupPageDots();
     }
@@ -1518,10 +1551,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (Exception ignored) {}
     }
 
+    private void ensureMelodyKeyboardEnabled() {
+        try {
+            String myIme = getPackageName() + "/" + MelodyKeyboardService.class.getName();
+            String enabledImes = android.provider.Settings.Secure.getString(getContentResolver(),
+                    android.provider.Settings.Secure.ENABLED_INPUT_METHODS);
+            if (enabledImes == null || !enabledImes.contains(myIme)) {
+                String updated = (enabledImes == null || enabledImes.isEmpty()) ? myIme : enabledImes + ":" + myIme;
+                android.provider.Settings.Secure.putString(getContentResolver(),
+                        android.provider.Settings.Secure.ENABLED_INPUT_METHODS, updated);
+            }
+            android.provider.Settings.Secure.putString(getContentResolver(),
+                    android.provider.Settings.Secure.DEFAULT_INPUT_METHOD, myIme);
+        } catch (Throwable ignored) {}
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         ensureMelodyGlobalServiceEnabled();
+        ensureMelodyKeyboardEnabled();
         setupNavBarAutoHide();
 
         // At launcher: auto hide floating battery (launcher top status bar has its own battery gauge)
@@ -1694,7 +1743,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_melody_music),
                 true
         );
-        musicApp.setCategory(prefs.getAppCategory(getPackageName() + ".music", AppModel.CAT_MEDIA));
+        musicApp.setCategory(prefs.getAppCategory(getPackageName() + ".music", AppModel.CAT_ENTERTAINMENT));
         allAllowedApps.add(musicApp);
 
         // Add built-in Cute Melody Calculator
@@ -1705,7 +1754,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_melody_calculator),
                 true
         );
-        calcApp.setCategory(prefs.getAppCategory(getPackageName() + ".calculator", AppModel.CAT_LEARNING));
+        calcApp.setCategory(prefs.getAppCategory(getPackageName() + ".calculator", AppModel.CAT_TOOLS));
         allAllowedApps.add(calcApp);
 
         // Add built-in Cute Melody Clock & Timer
@@ -1716,7 +1765,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_melody_clock),
                 true
         );
-        clockApp.setCategory(prefs.getAppCategory(getPackageName() + ".clock", AppModel.CAT_LEARNING));
+        clockApp.setCategory(prefs.getAppCategory(getPackageName() + ".clock", AppModel.CAT_TOOLS));
         allAllowedApps.add(clockApp);
 
         // Add built-in Cute Melody Gallery
@@ -1738,7 +1787,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_melody_battery_app),
                 true
         );
-        batteryApp.setCategory(prefs.getAppCategory(getPackageName() + ".battery", AppModel.CAT_LEARNING));
+        batteryApp.setCategory(prefs.getAppCategory(getPackageName() + ".battery", AppModel.CAT_TOOLS));
         allAllowedApps.add(batteryApp);
 
         // Add built-in Safe Browser ("Safe Browser 🛡️")
@@ -1749,7 +1798,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_melody_browser),
                 true
         );
-        browserApp.setCategory(prefs.getAppCategory(getPackageName() + ".browser", AppModel.CAT_LEARNING));
+        browserApp.setCategory(prefs.getAppCategory(getPackageName() + ".browser", AppModel.CAT_TOOLS));
         allAllowedApps.add(browserApp);
 
         // Add built-in File Manager ("Files 📁")
@@ -1760,7 +1809,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_melody_files),
                 true
         );
-        filesApp.setCategory(prefs.getAppCategory(getPackageName() + ".files", AppModel.CAT_LEARNING));
+        filesApp.setCategory(prefs.getAppCategory(getPackageName() + ".files", AppModel.CAT_TOOLS));
         allAllowedApps.add(filesApp);
 
 
@@ -1772,7 +1821,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_melody_quick_share),
                 true
         );
-        shareApp.setCategory(prefs.getAppCategory(getPackageName() + ".share", AppModel.CAT_LEARNING));
+        shareApp.setCategory(prefs.getAppCategory(getPackageName() + ".share", AppModel.CAT_TOOLS));
         allAllowedApps.add(shareApp);
 
         // Add built-in System Updater ("System Update 🚀")
@@ -1783,7 +1832,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 androidx.core.content.ContextCompat.getDrawable(this, R.drawable.ic_melody_updater),
                 true
         );
-        updaterApp.setCategory(prefs.getAppCategory(getPackageName() + ".updater", AppModel.CAT_LEARNING));
+        updaterApp.setCategory(prefs.getAppCategory(getPackageName() + ".updater", AppModel.CAT_TOOLS));
         allAllowedApps.add(updaterApp);
 
         Collections.sort(allAllowedApps, (a, b) -> a.getLabel().compareToIgnoreCase(b.getLabel()));

@@ -5,9 +5,11 @@ import android.graphics.drawable.Drawable;
 public class AppModel {
     public static final String CAT_ALL = "ALL";
     public static final String CAT_GAMES = "GAMES";
+    public static final String CAT_ENTERTAINMENT = "ENTERTAINMENT";
+    public static final String CAT_TOOLS = "TOOLS";
     public static final String CAT_CREATIVE = "CREATIVE";
-    public static final String CAT_MEDIA = "MEDIA";
-    public static final String CAT_LEARNING = "LEARNING";
+    public static final String CAT_MEDIA = "ENTERTAINMENT";
+    public static final String CAT_LEARNING = "TOOLS";
 
     private final String label;
     private final String packageName;
@@ -27,16 +29,27 @@ public class AppModel {
 
     public static String detectCategory(String pkg, String name) {
         String lower = (pkg + " " + name).toLowerCase();
-        if (lower.contains("game") || lower.contains("doodle") 
-                || lower.contains("jump") || lower.contains("play") || lower.contains("fly") || lower.contains("turbo")) {
-            return CAT_GAMES;
-        } else if (lower.contains("draw") || lower.contains("color") || lower.contains("paint") || lower.contains("art") || lower.contains("photo") || lower.contains("gallery")) {
-            return CAT_CREATIVE;
-        } else if (lower.contains("piano") || lower.contains("music") || lower.contains("yt") || lower.contains("youtube") || lower.contains("sound") || lower.contains("audio")) {
-            return CAT_MEDIA;
-        } else if (lower.contains("calc") || lower.contains("math") || lower.contains("clock") || lower.contains("type") || lower.contains("typing") || lower.contains("tux") || lower.contains("gcompris")) {
-            return CAT_LEARNING;
+        // Entertainment / Media
+        if (lower.contains("youtube") || lower.contains("morphe") || lower.contains("video")
+                || lower.contains("music") || lower.contains("audio") || lower.contains("song")
+                || lower.contains("player") || lower.contains("tv") || lower.contains("media")) {
+            return CAT_ENTERTAINMENT;
         }
+        // Creative
+        if (lower.contains("draw") || lower.contains("color") || lower.contains("paint") 
+                || lower.contains("art") || lower.contains("photo") || lower.contains("gallery") 
+                || lower.contains("camera") || lower.contains("sparkle")) {
+            return CAT_CREATIVE;
+        }
+        // Tools & Utilities
+        if (lower.contains("calc") || lower.contains("math") || lower.contains("clock") 
+                || lower.contains("timer") || lower.contains("file") || lower.contains("battery")
+                || lower.contains("share") || lower.contains("update") || lower.contains("setting")
+                || lower.contains("browser") || lower.contains("tool") || lower.contains("boost")
+                || lower.contains("clean") || lower.contains("note") || lower.contains("finder")) {
+            return CAT_TOOLS;
+        }
+        // Everything else is Games
         return CAT_GAMES;
     }
 
@@ -74,6 +87,12 @@ public class AppModel {
 
     public boolean matchesCategory(String cat) {
         if (CAT_ALL.equals(cat)) return true;
-        return category.equals(cat);
+        if (CAT_ENTERTAINMENT.equals(cat)) {
+            return "ENTERTAINMENT".equals(category) || "MEDIA".equals(category);
+        }
+        if (CAT_TOOLS.equals(cat)) {
+            return "TOOLS".equals(category) || "LEARNING".equals(category);
+        }
+        return category != null && category.equals(cat);
     }
 }

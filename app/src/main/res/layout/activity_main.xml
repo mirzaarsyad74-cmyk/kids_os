@@ -166,6 +166,101 @@
 
         </RelativeLayout>
 
+        <!-- Pastel-Pink Category Bar (🌸 All / 🎮 Games / 🎬 Entertainment / 🛠️ Tools / 🎨 Creative) -->
+        <HorizontalScrollView
+            android:id="@+id/scroll_categories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:overScrollMode="never"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="4dp">
+
+            <LinearLayout
+                android:id="@+id/layout_category_chips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="2dp">
+
+                <TextView
+                    android:id="@+id/chip_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="🌸 All"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@drawable/bg_melody_chip_selected"
+                    android:paddingHorizontal="14dp"
+                    android:layout_marginEnd="8dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/chip_games"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="🎮 Games"
+                    android:textColor="#9D174D"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@drawable/bg_melody_chip_unselected"
+                    android:paddingHorizontal="14dp"
+                    android:layout_marginEnd="8dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/chip_entertainment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="🎬 Entertainment"
+                    android:textColor="#9D174D"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@drawable/bg_melody_chip_unselected"
+                    android:paddingHorizontal="14dp"
+                    android:layout_marginEnd="8dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/chip_tools"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="🛠️ Tools"
+                    android:textColor="#9D174D"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@drawable/bg_melody_chip_unselected"
+                    android:paddingHorizontal="14dp"
+                    android:layout_marginEnd="8dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/chip_creative"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="🎨 Creative"
+                    android:textColor="#9D174D"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@drawable/bg_melody_chip_unselected"
+                    android:paddingHorizontal="14dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
+        </HorizontalScrollView>
+
         <!-- Horizontal Paged App Grid (2 Rows x 5 Columns, iWawa Style) -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_kids_apps"
@@ -182,36 +277,53 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp">
 
-            <!-- Bottom Left Actions: Back & Recents -->
+            <!-- Quick Dock Launchers: Camera, YouTube & YouTube Kids -->
             <LinearLayout
+                android:id="@+id/layout_quick_dock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
+                <!-- Quick Camera Launcher Button -->
                 <ImageButton
-                    android:id="@+id/btn_iwawa_back"
+                    android:id="@+id/btn_quick_camera"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
-                    android:background="@drawable/bg_iwawa_circle_btn"
-                    android:src="@drawable/ic_iwawa_back"
+                    android:background="@drawable/bg_quick_dock_circle"
+                    android:src="@drawable/ic_melody_camera"
                     android:scaleType="centerInside"
-                    android:padding="8dp"
+                    android:padding="5dp"
                     android:elevation="4dp"
-                    android:contentDescription="Exit Kids Space" />
+                    android:contentDescription="Launch Camera" />
 
+                <!-- Quick YouTube Launcher Button -->
                 <ImageButton
-                    android:id="@+id/btn_iwawa_recents"
+                    android:id="@+id/btn_quick_youtube"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
-                    android:layout_marginStart="8dp"
-                    android:background="@drawable/bg_iwawa_circle_btn"
-                    android:src="@drawable/ic_iwawa_recents"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/bg_quick_dock_circle"
+                    android:src="@drawable/ic_youtube_official"
                     android:scaleType="centerInside"
-                    android:padding="9dp"
+                    android:padding="6dp"
                     android:elevation="4dp"
-                    android:contentDescription="Open Recents" />
+                    android:contentDescription="Launch YouTube" />
+
+                <!-- Quick YouTube Kids Launcher Button -->
+                <ImageButton
+                    android:id="@+id/btn_quick_ytkids"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/bg_quick_dock_circle"
+                    android:src="@drawable/ic_ytkids_official"
+                    android:scaleType="centerInside"
+                    android:padding="5dp"
+                    android:elevation="4dp"
+                    android:contentDescription="Launch YouTube Kids" />
             </LinearLayout>
 
             <!-- Page Indicator Dots (Bottom Center) -->

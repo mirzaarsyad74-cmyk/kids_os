@@ -169,6 +169,12 @@ public class MelodyGlobalService extends AccessibilityService {
             CharSequence cls = event.getClassName();
             String clsStr = cls != null ? cls.toString() : "";
 
+            // Auto-Dismiss Google Play Games Sign-In Prompts
+            if ("com.google.android.gms".equals(pkgStr) && clsStr.toLowerCase().contains("games")) {
+                performGlobalAction(GLOBAL_ACTION_BACK);
+                return;
+            }
+
             if ("com.android.systemui".equals(pkgStr)) {
                 if (clsStr.toLowerCase().contains("recents")) {
                     openMelodyRecents();
