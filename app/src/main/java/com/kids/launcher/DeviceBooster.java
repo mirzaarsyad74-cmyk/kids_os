@@ -40,12 +40,15 @@ public class DeviceBooster {
                 for (ApplicationInfo appInfo : apps) {
                     String pkg = appInfo.packageName;
                     // Protect target opening app, launcher, keyboard, and essential system UI
+                    // Crucial: Keep YouTube alive in background for instant zero cold-start loading
                     if (!pkg.equals(myPkg)
                             && (targetOpeningPkg == null || !pkg.equals(targetOpeningPkg))
                             && !pkg.equals("com.android.systemui")
                             && !pkg.contains("inputmethod")
                             && !pkg.equals("android")
-                            && !pkg.equals("com.google.android.inputmethod.latin")) {
+                            && !pkg.equals("com.google.android.inputmethod.latin")
+                            && !pkg.contains("youtube")
+                            && !pkg.contains("morphe")) {
                         am.killBackgroundProcesses(pkg);
                     }
                 }

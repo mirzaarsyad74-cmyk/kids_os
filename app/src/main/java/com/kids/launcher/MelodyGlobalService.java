@@ -603,6 +603,15 @@ public class MelodyGlobalService extends AccessibilityService {
         } catch (Exception ignored) {}
     }
 
+    public void openMelodyRecents() {
+        try {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setAction(MainActivity.ACTION_SHOW_RECENTS);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+        } catch (Exception ignored) {}
+    }
+
     private void setupGlobalAutoBrightness() {
         try {
             sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -1041,7 +1050,7 @@ public class MelodyGlobalService extends AccessibilityService {
 
         // 3. Recents
         touchMenuView.findViewById(R.id.btn_action_recents).setOnClickListener(v -> {
-            performGlobalAction(GLOBAL_ACTION_RECENTS);
+            openMelodyRecents();
             hideTouchMenu();
         });
 

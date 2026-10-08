@@ -12,14 +12,17 @@
         android:layout_centerInParent="true" />
 
 
-    <!-- Top Header Controls -->
+    <!-- Top Header Controls (paddingTop 36dp clears top status bar shield overlay) -->
     <LinearLayout
         android:id="@+id/layout_camera_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="12dp"
+        android:paddingTop="36dp"
+        android:paddingBottom="12dp"
+        android:paddingHorizontal="16dp"
+        android:clipToPadding="false"
         android:background="#66000000"
         android:layout_alignParentTop="true">
 
@@ -27,13 +30,15 @@
             android:id="@+id/btn_camera_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minHeight="44dp"
+            android:gravity="center"
             android:text="◀ Back"
             android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:textStyle="bold"
             android:background="@drawable/bg_melody_pill"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="6dp"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
             android:clickable="true"
             android:focusable="true" />
 
@@ -55,13 +60,15 @@
             android:id="@+id/btn_camera_flash"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minHeight="44dp"
+            android:gravity="center"
             android:text="⚡ Auto"
             android:textColor="#831843"
             android:textSize="13sp"
             android:textStyle="bold"
             android:background="@drawable/bg_melody_pill"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="6dp"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
             android:layout_marginEnd="8dp"
             android:clickable="true"
             android:focusable="true" />
@@ -70,13 +77,15 @@
             android:id="@+id/btn_camera_flip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minHeight="44dp"
+            android:gravity="center"
             android:text="🔄 Flip"
             android:textColor="#831843"
             android:textSize="13sp"
             android:textStyle="bold"
             android:background="@drawable/bg_melody_pill"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="6dp"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
             android:clickable="true"
             android:focusable="true" />
     </LinearLayout>

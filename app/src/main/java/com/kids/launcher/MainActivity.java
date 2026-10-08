@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView btnVolumeQuick;
     private FrameLayout btnNotificationBell;
     public static final String ACTION_SHOW_QUICK_SETTINGS = "com.kids.launcher.ACTION_SHOW_QUICK_SETTINGS";
+    public static final String ACTION_SHOW_RECENTS = "com.kids.launcher.ACTION_SHOW_RECENTS";
 
     private View viewNotificationDot;
     private TextView btnWallpaperPicker;
@@ -268,6 +269,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             btnIwawaBack.setOnClickListener(v -> showPinDialog(() -> {
                 finish();
             }));
+        }
+
+        View btnIwawaRecents = findViewById(R.id.btn_iwawa_recents);
+        if (btnIwawaRecents != null) {
+            btnIwawaRecents.setOnClickListener(v -> toggleRecentsOverlay());
         }
 
         View layoutKidProfile = findViewById(R.id.layout_kid_profile);
@@ -1220,6 +1226,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 btnClearAllRecents.setEnabled(false);
                 btnClearAllRecents.setAlpha(0.5f);
             }
+            DeviceBooster.boost(MainActivity.this);
             Toast.makeText(MainActivity.this, "🧹 All open windows cleared!", Toast.LENGTH_SHORT).show();
             closeRecentsOverlay();
         }, 260);
@@ -1424,8 +1431,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        if (intent != null && ACTION_SHOW_QUICK_SETTINGS.equals(intent.getAction())) {
-            toggleControlCenter(true);
+        if (intent != null) {
+            if (ACTION_SHOW_QUICK_SETTINGS.equals(intent.getAction())) {
+                toggleControlCenter(true);
+            } else if (ACTION_SHOW_RECENTS.equals(intent.getAction())) {
+                showRecentsOverlay();
+            }
         }
     }
 
@@ -1855,6 +1866,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             try {
                 // Pre-warm Android System WebView to eliminate cold-start lag for YouTube and browsers
                 new android.webkit.WebView(getApplicationContext()).destroy();
+            } catch (Exception ignored) {}
+        }).start();
+        keepYouTubeWarmInBackground();
+    }
+
+    private void keepYouTubeWarmInBackground() {
+        new Thread(() -> {
+            try {
+                // Pre-warm YouTube / Morphe packages and keep them in memory for fast loading
+                String[] ytPackages = {"app.morphe.android.youtube", "com.google.android.apps.youtube.kids"};
+                for (String pkg : ytPackages) {
+                    try {
+                        getPackageManager().getPackageInfo(pkg, 0);
+                        getPackageManager().getResourcesForApplication(pkg);
+                    } catch (Exception ignored) {}
+                }
             } catch (Exception ignored) {}
         }).start();
     }

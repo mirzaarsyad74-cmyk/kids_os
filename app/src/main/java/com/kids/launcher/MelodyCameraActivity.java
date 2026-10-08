@@ -251,8 +251,10 @@ public class MelodyCameraActivity extends AppCompatActivity implements SurfaceHo
             Toast.makeText(this, "Only one camera available on this tablet", Toast.LENGTH_SHORT).show();
             return;
         }
+        isTorchActive = false;
         currentCameraId = (currentCameraId + 1) % numCameras;
         reopenCamera();
+        Toast.makeText(this, currentCameraId == 0 ? "📷 Back Camera" : "🤳 Front Camera", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -265,26 +267,32 @@ public class MelodyCameraActivity extends AppCompatActivity implements SurfaceHo
             Camera.CameraInfo info = new Camera.CameraInfo();
             Camera.getCameraInfo(currentCameraId, info);
             if (info.facing != Camera.CameraInfo.CAMERA_FACING_BACK) {
-                Toast.makeText(this, "🔦 Flashlight is on the Back Camera!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "🔦 Flashlight is only available on the Back Camera!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             Camera.Parameters params = camera.getParameters();
             List<String> supported = params.getSupportedFlashModes();
-            if (supported == null || !supported.contains(Camera.Parameters.FLASH_MODE_TORCH)) {
+            if (supported == null || (!supported.contains(Camera.Parameters.FLASH_MODE_TORCH) && !supported.contains(Camera.Parameters.FLASH_MODE_ON))) {
                 Toast.makeText(this, "Flashlight not supported on this camera", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             isTorchActive = !isTorchActive;
             if (isTorchActive) {
-                params.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                if (supported.contains(Camera.Parameters.FLASH_MODE_TORCH)) {
+                    params.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                } else {
+                    params.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+                }
                 btnFlash.setText("🔦 Light: ON");
                 btnFlash.setBackgroundResource(R.drawable.bg_melody_chip_selected);
                 btnFlash.setTextColor(Color.WHITE);
-                Toast.makeText(this, "🔦 Flashlight stays ON until you exit camera!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "🔦 Flashlight is ON!", Toast.LENGTH_SHORT).show();
             } else {
-                params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                if (supported.contains(Camera.Parameters.FLASH_MODE_OFF)) {
+                    params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                }
                 btnFlash.setText("⚡ Flash: OFF");
                 btnFlash.setBackgroundResource(R.drawable.bg_melody_pill);
                 btnFlash.setTextColor(Color.parseColor("#831843"));
@@ -292,6 +300,7 @@ public class MelodyCameraActivity extends AppCompatActivity implements SurfaceHo
             camera.setParameters(params);
         } catch (Exception e) {
             e.printStackTrace();
+            Toast.makeText(this, "Flash error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
